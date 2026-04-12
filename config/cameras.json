@@ -1,0 +1,9 @@
+{
+  "cameras": [
+    { "id": 1, "name": "Bin Site North", "ip": "192.168.1.10:37777", "nvr": "Location 1", "channel": 1, "type": "Amcrest" },
+    { "id": 2, "name": "Shop East", "ip": "192.168.1.10:37777", "nvr": "Location 1", "channel": 2, "type": "Amcrest" },
+    { "id": 3, "name": "Bin Site South", "ip": "64.112.88.42:37777", "nvr": "Location 2", "channel": 1, "type": "Amcrest" },
+    { "id": 4, "name": "Drive Approach", "ip": "74.56.110.18:37777", "nvr": "Location 3", "channel": 1, "type": "Amcrest" }
+  ],
+  "homeDisplay": [1, 2, 3, 4]
+}

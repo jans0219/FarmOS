@@ -1071,6 +1071,112 @@
   .grain-scroll::-webkit-scrollbar { width: 4px; }
   .grain-scroll::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 2px; }
   .grain-scroll::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+
+  /* ── LIVE DATA STATES ── */
+  .loading-shimmer {
+    background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 3px;
+    color: transparent !important;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .data-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 4px 0;
+  }
+
+  .data-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .data-status-dot.live { background: var(--green); }
+  .data-status-dot.error { background: var(--red); }
+  .data-status-dot.loading { background: var(--orange); animation: pulse 1s infinite; }
+
+  .grain-error-msg {
+    text-align: center;
+    padding: 18px 12px;
+    color: var(--gray-500);
+    font-size: 12px;
+  }
+
+  .grain-error-msg .error-title {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 4px;
+  }
+
+  .grain-error-msg .error-detail {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-style: italic;
+  }
+
+  .grain-error-msg .retry-btn {
+    margin-top: 8px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: none;
+    border: 1px solid var(--orange);
+    padding: 4px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .grain-error-msg .retry-btn:hover {
+    background: var(--orange);
+    color: var(--white);
+  }
+
+  .weather-loading-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,22,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    z-index: 5;
+  }
+
+  .weather-loading-text {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+
+  .wx-updated-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--gray-500);
+    text-align: right;
+    margin-top: 8px;
+  }
 </style>
 </head>
 <body>
@@ -1108,7 +1214,7 @@
           <div class="card-title">
             <span class="card-title-icon">📈</span> Grain Markets
           </div>
-          <div class="card-badge"><span class="live-dot"></span>Updates every 20 min</div>
+          <div class="card-badge" id="grain-refresh-badge"><span class="live-dot"></span>Updates every 20 min</div>
         </div>
         <div class="card-body">
 
@@ -1123,10 +1229,10 @@
             <div class="grain-scroll">
 
               <!-- Green Plains -->
-              <div class="elevator-block">
+              <div class="elevator-block" id="gp-block">
                 <div class="elevator-name">Green Plains Renewable Energy</div>
                 <div class="elevator-location">Superior, IA · gpreinc.com</div>
-                <table class="grain-table">
+                <table class="grain-table" id="gp-table">
                   <thead>
                     <tr>
                       <th>Delivery</th>
@@ -1135,49 +1241,27 @@
                       <th>Change</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="gp-tbody">
                     <tr>
-                      <td><span class="delivery-month">APR 26</span></td>
-                      <td>4.08</td>
-                      <td class="basis-neg">-0.33</td>
-                      <td><span class="change-down"><span class="arrow-down"></span>-0.04</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">MAY 26</span></td>
-                      <td>4.04</td>
-                      <td class="basis-neg">-0.37</td>
-                      <td><span class="change-down"><span class="arrow-down"></span>-0.03</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">JUN 26</span></td>
-                      <td>4.06</td>
-                      <td class="basis-neg">-0.45</td>
-                      <td><span class="change-down"><span class="arrow-down"></span>-0.02</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">JUL 26</span></td>
-                      <td>4.10</td>
-                      <td class="basis-neg">-0.41</td>
-                      <td><span class="change-flat"><span class="arrow-flat"></span>0.00</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">SEP 26</span></td>
-                      <td>4.18</td>
-                      <td class="basis-neg">-0.38</td>
-                      <td><span class="change-up"><span class="arrow-up"></span>+0.01</span></td>
+                      <td colspan="4" style="text-align:center; padding:14px 0;">
+                        <span style="color:var(--gray-400); font-size:12px;">Loading bids...</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
-                <div class="update-time">Static mockup · Data not live</div>
+                <div class="data-status" id="gp-status">
+                  <span class="data-status-dot loading"></span>
+                  <span>Connecting to gpreinc.com...</span>
+                </div>
               </div>
 
               <div class="grain-divider"></div>
 
               <!-- New Fashion Pork -->
-              <div class="elevator-block">
+              <div class="elevator-block" id="nfp-block">
                 <div class="elevator-name">New Fashion Pork</div>
                 <div class="elevator-location">Estherville, IA · nfpinc.com</div>
-                <table class="grain-table">
+                <table class="grain-table" id="nfp-table">
                   <thead>
                     <tr>
                       <th>Delivery</th>
@@ -1186,34 +1270,18 @@
                       <th>Change</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="nfp-tbody">
                     <tr>
-                      <td><span class="delivery-month">APR 26</span></td>
-                      <td>4.12</td>
-                      <td class="basis-neg">-0.29</td>
-                      <td><span class="change-down"><span class="arrow-down"></span>-0.05</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">MAY 26</span></td>
-                      <td>4.09</td>
-                      <td class="basis-neg">-0.32</td>
-                      <td><span class="change-down"><span class="arrow-down"></span>-0.03</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">JUN 26</span></td>
-                      <td>4.11</td>
-                      <td class="basis-neg">-0.40</td>
-                      <td><span class="change-flat"><span class="arrow-flat"></span>0.00</span></td>
-                    </tr>
-                    <tr>
-                      <td><span class="delivery-month">JUL 26</span></td>
-                      <td>4.14</td>
-                      <td class="basis-neg">-0.37</td>
-                      <td><span class="change-up"><span class="arrow-up"></span>+0.02</span></td>
+                      <td colspan="4" style="text-align:center; padding:14px 0;">
+                        <span style="color:var(--gray-400); font-size:12px;">Loading bids...</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
-                <div class="update-time">Static mockup · Data not live</div>
+                <div class="data-status" id="nfp-status">
+                  <span class="data-status-dot loading"></span>
+                  <span>Connecting to nfpinc.com...</span>
+                </div>
               </div>
 
               <div class="grain-divider"></div>
@@ -1350,47 +1418,47 @@
         <div class="card-body" style="padding: 12px 14px;">
 
           <!-- TODAY PANEL (always visible) -->
-          <div class="weather-today">
+          <div class="weather-today" id="wx-today" style="position:relative;">
             <div class="weather-city">📍 Dunnell, MN · Today</div>
             <div class="weather-main">
-              <div class="weather-icon-large">⛅</div>
+              <div class="weather-icon-large" id="wx-icon">⛅</div>
               <div class="weather-temp-block">
-                <div class="weather-temp">58<span class="weather-temp-unit">°F</span></div>
-                <div class="weather-condition">Partly Cloudy</div>
+                <div class="weather-temp" id="wx-temp">--<span class="weather-temp-unit">°F</span></div>
+                <div class="weather-condition" id="wx-condition">Loading weather...</div>
               </div>
             </div>
 
             <div class="weather-today-grid">
               <div class="weather-stat">
                 <div class="weather-stat-label">Wind</div>
-                <div class="weather-stat-value">12 mph SSW</div>
+                <div class="weather-stat-value" id="wx-wind">--</div>
               </div>
               <div class="weather-stat">
                 <div class="weather-stat-label">Humidity</div>
-                <div class="weather-stat-value">64%</div>
+                <div class="weather-stat-value" id="wx-humidity">--%</div>
               </div>
               <div class="weather-stat">
                 <div class="weather-stat-label">Rain Today</div>
-                <div class="weather-stat-value">0.00"</div>
+                <div class="weather-stat-value" id="wx-rain-today">--"</div>
               </div>
               <div class="weather-stat">
                 <div class="weather-stat-label">Last 24 hrs</div>
-                <div class="weather-stat-value">0.12"</div>
+                <div class="weather-stat-value" id="wx-rain-24h">--"</div>
               </div>
             </div>
 
             <div class="rainfall-ytd">
               <div class="weather-stat">
                 <div class="weather-stat-label">YTD Rain</div>
-                <div class="weather-stat-value">3.41"</div>
+                <div class="weather-stat-value" id="wx-ytd-rain">--"</div>
               </div>
               <div class="weather-stat">
                 <div class="weather-stat-label">Hi / Lo</div>
-                <div class="weather-stat-value">63° / 44°</div>
+                <div class="weather-stat-value" id="wx-hilo">--° / --°</div>
               </div>
               <div class="weather-stat">
                 <div class="weather-stat-label">Dew Point</div>
-                <div class="weather-stat-value">46°F</div>
+                <div class="weather-stat-value" id="wx-dewpoint">--°F</div>
               </div>
             </div>
 
@@ -1399,27 +1467,28 @@
                 <span class="sun-icon">🌅</span>
                 <div>
                   <div class="sun-label">Sunrise</div>
-                  <div class="sun-value">6:24 AM</div>
+                  <div class="sun-value" id="wx-sunrise">--:--</div>
                 </div>
               </div>
               <div class="sun-item">
                 <span class="sun-icon">🌇</span>
                 <div>
                   <div class="sun-label">Sunset</div>
-                  <div class="sun-value">7:51 PM</div>
+                  <div class="sun-value" id="wx-sunset">--:--</div>
                 </div>
               </div>
             </div>
+            <div class="wx-updated-badge" id="wx-updated">Connecting to Open-Meteo...</div>
           </div>
 
           <!-- GDU BLOCK -->
           <div class="gdu-block">
             <div class="gdu-left">
               <div class="gdu-label">Growing Degree Units (Base 50°F)</div>
-              <div class="gdu-value">12 <span class="gdu-unit">GDU</span></div>
-              <div class="gdu-since">Since April 10, 2026</div>
+              <div class="gdu-value" id="wx-gdu-value">-- <span class="gdu-unit">GDU</span></div>
+              <div class="gdu-since" id="wx-gdu-since">Since April 10, 2026</div>
             </div>
-            <input class="gdu-date-input" type="date" value="2026-04-10">
+            <input class="gdu-date-input" type="date" value="2026-04-10" id="gdu-date-input">
           </div>
 
           <!-- FORECAST TOGGLE -->
@@ -1700,18 +1769,110 @@
 </div>
 
 <script>
-  // Clock
+  /* ================================================================
+     FarmOS Dashboard — Live Data Integration
+     Weather: Open-Meteo API (free, no key, CORS-friendly)
+     Grain:   CORS proxy scraping of elevator websites
+     ================================================================ */
+
+  // ── CONFIGURATION ──
+  const CONFIG = {
+    lat: 43.5344,
+    lon: -94.7613,
+    timezone: 'America/Chicago',
+    refreshMs: 20 * 60 * 1000, // 20 minutes
+    gduBase: 50,
+    corsProxies: [
+      url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+    ],
+    grainSources: {
+      greenPlains: 'https://gpreinc.com/corn-bids/',
+      nfp: 'https://www.nfpinc.com/corn-bids'
+    }
+  };
+
+  // ── WMO WEATHER CODES ──
+  const WMO = {
+    0:  { desc: 'Clear Sky',       icon: '\u2600\uFE0F' },
+    1:  { desc: 'Mainly Clear',    icon: '\uD83C\uDF24' },
+    2:  { desc: 'Partly Cloudy',   icon: '\u26C5' },
+    3:  { desc: 'Overcast',        icon: '\u2601\uFE0F' },
+    45: { desc: 'Fog',             icon: '\uD83C\uDF2B' },
+    48: { desc: 'Rime Fog',        icon: '\uD83C\uDF2B' },
+    51: { desc: 'Light Drizzle',   icon: '\uD83C\uDF26' },
+    53: { desc: 'Drizzle',         icon: '\uD83C\uDF26' },
+    55: { desc: 'Heavy Drizzle',   icon: '\uD83C\uDF26' },
+    56: { desc: 'Freezing Drizzle',icon: '\uD83C\uDF27' },
+    57: { desc: 'Hvy Frz Drizzle', icon: '\uD83C\uDF27' },
+    61: { desc: 'Light Rain',      icon: '\uD83C\uDF27' },
+    63: { desc: 'Rain',            icon: '\uD83C\uDF27' },
+    65: { desc: 'Heavy Rain',      icon: '\uD83C\uDF27' },
+    66: { desc: 'Freezing Rain',   icon: '\uD83C\uDF27' },
+    67: { desc: 'Hvy Frz Rain',    icon: '\uD83C\uDF27' },
+    71: { desc: 'Light Snow',      icon: '\uD83C\uDF28' },
+    73: { desc: 'Snow',            icon: '\uD83C\uDF28' },
+    75: { desc: 'Heavy Snow',      icon: '\uD83C\uDF28' },
+    77: { desc: 'Snow Grains',     icon: '\uD83C\uDF28' },
+    80: { desc: 'Light Showers',   icon: '\uD83C\uDF26' },
+    81: { desc: 'Showers',         icon: '\uD83C\uDF27' },
+    82: { desc: 'Heavy Showers',   icon: '\uD83C\uDF27' },
+    85: { desc: 'Light Snow Shw',  icon: '\uD83C\uDF28' },
+    86: { desc: 'Heavy Snow Shw',  icon: '\uD83C\uDF28' },
+    95: { desc: 'Thunderstorm',    icon: '\u26C8' },
+    96: { desc: 'T-storm w/ Hail', icon: '\u26C8' },
+    99: { desc: 'Severe T-storm',  icon: '\u26C8' }
+  };
+
+  // ── UTILITIES ──
+  function windDir(deg) {
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(deg / 22.5) % 16];
+  }
+
+  function formatTime(isoStr) {
+    if (!isoStr) return '--:--';
+    const d = new Date(isoStr);
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  function formatTimestamp(d) {
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+  }
+
+  function getDayName(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'short' });
+  }
+
+  function getWMO(code) {
+    return WMO[code] || { desc: 'Unknown', icon: '\uD83C\uDF21' };
+  }
+
+  function findTodayIndex(timeArray) {
+    const today = new Date().toISOString().slice(0, 10);
+    const idx = timeArray.indexOf(today);
+    return idx >= 0 ? idx : timeArray.length - 1;
+  }
+
+  function findDateIndex(timeArray, dateStr) {
+    const idx = timeArray.indexOf(dateStr);
+    return idx >= 0 ? idx : 0;
+  }
+
+  // ── CLOCK ──
   function updateClock() {
     const now = new Date();
-    const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateStr = now.toLocaleDateString('en-US', opts);
-    const timeStr = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', timeZoneName:'short' });
-    document.getElementById('clock').textContent = `${dateStr} · ${timeStr}`;
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+    document.getElementById('clock').textContent = `${dateStr} \u00B7 ${timeStr}`;
   }
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Tab switching
+  // ── TAB SWITCHING ──
   function switchTab(tabId, el) {
     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1719,7 +1880,6 @@
     el.classList.add('active');
   }
 
-  // Grain tab toggle
   function switchGrain(type, el) {
     document.querySelectorAll('.grain-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
@@ -1727,7 +1887,6 @@
     document.getElementById('grain-soy').style.display = type === 'soy' ? 'block' : 'none';
   }
 
-  // Forecast toggle
   function toggleForecast(days, el) {
     document.querySelectorAll('.forecast-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
@@ -1741,6 +1900,459 @@
       fc10.style.display = 'flex';
     }
   }
+
+  // ================================================================
+  //  WEATHER — Open-Meteo Integration
+  // ================================================================
+
+  let weatherCache = null;
+
+  async function fetchWeather() {
+    try {
+      const url = 'https://api.open-meteo.com/v1/forecast?' +
+        `latitude=${CONFIG.lat}&longitude=${CONFIG.lon}` +
+        '&current=temperature_2m,relative_humidity_2m,dewpoint_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m' +
+        '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weather_code,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset' +
+        '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch' +
+        `&timezone=${CONFIG.timezone}&forecast_days=14&past_days=92`;
+
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      weatherCache = data;
+      updateWeatherUI(data);
+      updateGDU(data);
+      document.getElementById('wx-updated').textContent = `\u2713 Live \u00B7 Updated ${formatTimestamp(new Date())}`;
+      document.getElementById('wx-updated').style.color = 'var(--green)';
+    } catch (err) {
+      console.error('Weather fetch error:', err);
+      document.getElementById('wx-updated').textContent = `\u2717 Error: ${err.message} \u00B7 Retrying in 20 min`;
+      document.getElementById('wx-updated').style.color = 'var(--red)';
+    }
+  }
+
+  function updateWeatherUI(data) {
+    const c = data.current;
+    const d = data.daily;
+    const todayIdx = findTodayIndex(d.time);
+
+    // Today panel
+    const wmo = getWMO(c.weather_code);
+    document.getElementById('wx-icon').textContent = wmo.icon;
+    document.getElementById('wx-temp').innerHTML = `${Math.round(c.temperature_2m)}<span class="weather-temp-unit">\u00B0F</span>`;
+    document.getElementById('wx-condition').textContent = wmo.desc;
+
+    // Stats
+    document.getElementById('wx-wind').textContent = `${Math.round(c.wind_speed_10m)} mph ${windDir(c.wind_direction_10m)}`;
+    document.getElementById('wx-humidity').textContent = `${c.relative_humidity_2m}%`;
+    document.getElementById('wx-rain-today').textContent = `${(d.precipitation_sum[todayIdx] || 0).toFixed(2)}"`;
+
+    // Last 24 hrs (yesterday's total)
+    const yesterdayIdx = todayIdx > 0 ? todayIdx - 1 : 0;
+    document.getElementById('wx-rain-24h').textContent = `${(d.precipitation_sum[yesterdayIdx] || 0).toFixed(2)}"`;
+
+    // YTD Rain — computed asynchronously via archive API for full accuracy
+    document.getElementById('wx-ytd-rain').textContent = 'calc...';
+    fetchYTDRain(d, todayIdx);
+
+    // Hi / Lo
+    document.getElementById('wx-hilo').textContent =
+      `${Math.round(d.temperature_2m_max[todayIdx])}\u00B0 / ${Math.round(d.temperature_2m_min[todayIdx])}\u00B0`;
+
+    // Dew Point
+    document.getElementById('wx-dewpoint').textContent = `${Math.round(c.dewpoint_2m)}\u00B0F`;
+
+    // Sunrise / Sunset
+    document.getElementById('wx-sunrise').textContent = formatTime(d.sunrise[todayIdx]);
+    document.getElementById('wx-sunset').textContent = formatTime(d.sunset[todayIdx]);
+
+    // Build forecasts
+    buildForecasts(data, todayIdx);
+  }
+
+  function buildForecasts(data, todayIdx) {
+    const d = data.daily;
+    const startIdx = todayIdx + 1; // forecast starts tomorrow
+
+    // Calculate temp range for bar scaling
+    let allTemps = [];
+    for (let i = startIdx; i < Math.min(startIdx + 10, d.time.length); i++) {
+      allTemps.push(d.temperature_2m_max[i], d.temperature_2m_min[i]);
+    }
+    const tempMin = Math.min(...allTemps);
+    const tempMax = Math.max(...allTemps);
+    const tempRange = tempMax - tempMin || 1;
+
+    function buildDay(i) {
+      const wmo = getWMO(d.weather_code[i]);
+      const hi = Math.round(d.temperature_2m_max[i]);
+      const lo = Math.round(d.temperature_2m_min[i]);
+      const barLeft = ((lo - tempMin) / tempRange * 100).toFixed(0);
+      const barWidth = (((hi - lo) / tempRange) * 100).toFixed(0);
+      const precip = (d.precipitation_sum[i] || 0).toFixed(2);
+      const precipProb = d.precipitation_probability_max[i] || 0;
+      const windMax = Math.round(d.wind_speed_10m_max[i] || 0);
+      const windDirDom = windDir(d.wind_direction_10m_dominant[i] || 0);
+
+      return `<div class="forecast-day">
+        <div class="forecast-dayname">${getDayName(d.time[i])}</div>
+        <div class="forecast-icon">${wmo.icon}</div>
+        <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:${barWidth}%;margin-left:${barLeft}%"></div></div>
+        <div class="forecast-hi">${hi}\u00B0</div>
+        <div class="forecast-lo">${lo}\u00B0</div>
+        <div class="forecast-rain"><span class="forecast-rain-pct">\u2614 ${precipProb}%</span><span class="forecast-rain-in">${precip}"</span></div>
+        <div class="forecast-wind">${windMax} mph<br><span style="font-size:9px;">${windDirDom}</span></div>
+      </div>`;
+    }
+
+    // 3-day forecast
+    let html3 = '';
+    for (let i = startIdx; i < Math.min(startIdx + 3, d.time.length); i++) {
+      html3 += buildDay(i);
+    }
+    document.getElementById('fc3').innerHTML = html3;
+
+    // 10-day forecast
+    let html10 = '';
+    for (let i = startIdx; i < Math.min(startIdx + 10, d.time.length); i++) {
+      html10 += buildDay(i);
+    }
+    document.getElementById('fc10').innerHTML = html10;
+  }
+
+  // ── GDU CALCULATION ──
+  function updateGDU(data) {
+    const d = data.daily;
+    const dateInput = document.getElementById('gdu-date-input');
+    const startDate = dateInput.value;
+    const todayIdx = findTodayIndex(d.time);
+    const today = d.time[todayIdx];
+
+    let totalGDU = 0;
+    for (let i = 0; i < d.time.length; i++) {
+      if (d.time[i] >= startDate && d.time[i] <= today) {
+        const tMax = Math.min(d.temperature_2m_max[i], 86); // cap at 86°F per standard GDU
+        const tMin = Math.max(d.temperature_2m_min[i], CONFIG.gduBase);
+        const gdu = Math.max(0, ((tMax + tMin) / 2) - CONFIG.gduBase);
+        totalGDU += gdu;
+      }
+    }
+
+    document.getElementById('wx-gdu-value').innerHTML =
+      `${Math.round(totalGDU)} <span class="gdu-unit">GDU</span>`;
+
+    const startD = new Date(startDate + 'T12:00:00');
+    const sinceStr = startD.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    document.getElementById('wx-gdu-since').textContent = `Since ${sinceStr}`;
+  }
+
+  // Recalculate GDU when date input changes
+  document.getElementById('gdu-date-input').addEventListener('change', function() {
+    if (weatherCache) updateGDU(weatherCache);
+  });
+
+  // ── YTD RAIN — Archive API for full accuracy ──
+  async function fetchYTDRain(dailyData, todayIdx) {
+    const yearStr = new Date().getFullYear().toString();
+    const jan1Str = `${yearStr}-01-01`;
+    const todayStr = dailyData.time[todayIdx];
+
+    // Sum what we already have from the forecast API's past_days window
+    let forecastRain = 0;
+    let earliestForecastDate = null;
+    for (let i = 0; i < dailyData.time.length && i <= todayIdx; i++) {
+      if (dailyData.time[i] >= jan1Str && dailyData.time[i] <= todayStr) {
+        forecastRain += dailyData.precipitation_sum[i] || 0;
+        if (!earliestForecastDate) earliestForecastDate = dailyData.time[i];
+      }
+    }
+
+    // If forecast data covers all the way back to Jan 1, we're done
+    if (earliestForecastDate <= jan1Str) {
+      document.getElementById('wx-ytd-rain').textContent = `${forecastRain.toFixed(2)}"`;
+      return;
+    }
+
+    // Otherwise, fetch the gap from the archive API (Jan 1 to day before earliest)
+    try {
+      const gapEnd = new Date(earliestForecastDate);
+      gapEnd.setDate(gapEnd.getDate() - 1);
+      const gapEndStr = gapEnd.toISOString().slice(0, 10);
+
+      if (gapEndStr < jan1Str) {
+        document.getElementById('wx-ytd-rain').textContent = `${forecastRain.toFixed(2)}"`;
+        return;
+      }
+
+      const archiveUrl = `https://archive-api.open-meteo.com/v1/archive?` +
+        `latitude=${CONFIG.lat}&longitude=${CONFIG.lon}` +
+        `&start_date=${jan1Str}&end_date=${gapEndStr}` +
+        `&daily=precipitation_sum&precipitation_unit=inch&timezone=${CONFIG.timezone}`;
+
+      const resp = await fetch(archiveUrl);
+      if (!resp.ok) throw new Error(`Archive API: HTTP ${resp.status}`);
+      const archive = await resp.json();
+
+      let archiveRain = 0;
+      if (archive.daily && archive.daily.precipitation_sum) {
+        for (const p of archive.daily.precipitation_sum) {
+          archiveRain += p || 0;
+        }
+      }
+
+      const totalYTD = forecastRain + archiveRain;
+      document.getElementById('wx-ytd-rain').textContent = `${totalYTD.toFixed(2)}"`;
+    } catch (err) {
+      console.warn('Archive API fallback for YTD rain:', err);
+      // Fall back to what we have from the forecast API
+      document.getElementById('wx-ytd-rain').textContent = `~${forecastRain.toFixed(2)}"`;
+    }
+  }
+
+  // ================================================================
+  //  GRAIN MARKETS — Backend API + CORS Proxy Fallback
+  // ================================================================
+
+  // Try fetching through multiple CORS proxies
+  async function fetchViaProxy(targetUrl) {
+    for (const proxyFn of CONFIG.corsProxies) {
+      try {
+        const proxyUrl = proxyFn(targetUrl);
+        const resp = await fetch(proxyUrl, {
+          signal: AbortSignal.timeout(15000)
+        });
+        if (!resp.ok) continue;
+        return await resp.text();
+      } catch (e) {
+        continue; // try next proxy
+      }
+    }
+    throw new Error('All proxies failed');
+  }
+
+  // Parse grain bid data from HTML
+  function parseGrainBids(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const bids = [];
+
+    // Strategy 1: Look for table rows with price-like data
+    const tables = doc.querySelectorAll('table');
+    for (const table of tables) {
+      const rows = table.querySelectorAll('tbody tr, tr');
+      for (const row of rows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3) {
+          const texts = Array.from(cells).map(c => c.textContent.trim());
+          // Look for rows that contain a month abbreviation and a price
+          const monthMatch = texts[0].match(/\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/i);
+          const priceMatch = texts.find(t => /^\$?\d+\.\d{2,}/.test(t));
+          if (monthMatch && priceMatch) {
+            bids.push({
+              delivery: texts[0],
+              cashBid: extractPrice(texts[1]) || extractPrice(texts.find(t => /^\$?\d+\.\d{2}/.test(t))),
+              basis: extractBasis(texts),
+              change: extractChange(texts)
+            });
+          }
+        }
+      }
+    }
+
+    // Strategy 2: Look for common grain bid widget patterns
+    if (bids.length === 0) {
+      const bidElements = doc.querySelectorAll('[class*="bid"], [class*="price"], [class*="grain"], [data-delivery], [data-month]');
+      for (const el of bidElements) {
+        const delivery = el.getAttribute('data-delivery') || el.getAttribute('data-month');
+        const price = el.querySelector('[class*="price"], [class*="cash"]');
+        if (delivery && price) {
+          bids.push({
+            delivery: delivery,
+            cashBid: extractPrice(price.textContent),
+            basis: '--',
+            change: '0.00'
+          });
+        }
+      }
+    }
+
+    return bids;
+  }
+
+  function extractPrice(text) {
+    if (!text) return null;
+    const match = text.match(/\$?(\d+\.\d{2,4})/);
+    return match ? parseFloat(match[1]).toFixed(2) : null;
+  }
+
+  function extractBasis(texts) {
+    for (const t of texts) {
+      const match = t.match(/([+-]?\d+\.\d{2})/);
+      if (match && Math.abs(parseFloat(match[1])) < 2) { // basis is typically small
+        return match[1];
+      }
+    }
+    return '--';
+  }
+
+  function extractChange(texts) {
+    const last = texts[texts.length - 1];
+    const match = last.match(/([+-]?\d+\.\d{2,4})/);
+    return match ? parseFloat(match[1]).toFixed(2) : '0.00';
+  }
+
+  function renderBidRows(bids) {
+    return bids.map(b => {
+      const basisVal = parseFloat(b.basis);
+      const basisClass = isNaN(basisVal) ? '' : (basisVal < 0 ? 'basis-neg' : 'basis-pos');
+      const changeVal = parseFloat(b.change);
+      let changeClass = 'change-flat', arrowClass = 'arrow-flat', changeStr = '0.00';
+      if (!isNaN(changeVal)) {
+        if (changeVal < 0) { changeClass = 'change-down'; arrowClass = 'arrow-down'; changeStr = changeVal.toFixed(2); }
+        else if (changeVal > 0) { changeClass = 'change-up'; arrowClass = 'arrow-up'; changeStr = '+' + changeVal.toFixed(2); }
+        else { changeStr = '0.00'; }
+      }
+      return `<tr>
+        <td><span class="delivery-month">${b.delivery}</span></td>
+        <td>${b.cashBid || '--'}</td>
+        <td class="${basisClass}">${b.basis}</td>
+        <td><span class="${changeClass}"><span class="${arrowClass}"></span>${changeStr}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function setElevatorStatus(id, status, message) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const dot = el.querySelector('.data-status-dot');
+    if (dot) {
+      dot.className = 'data-status-dot ' + status;
+    }
+    const span = el.querySelector('span:last-child');
+    if (span) span.textContent = message;
+  }
+
+  function setElevatorError(tbodyId, statusId, errorMsg) {
+    document.getElementById(tbodyId).innerHTML = `<tr><td colspan="4">
+      <div class="grain-error-msg">
+        <div class="error-title">${errorMsg}</div>
+        <div class="error-detail">Start the backend server: npm install &amp;&amp; npm start</div>
+        <button class="retry-btn" onclick="fetchGrainData()">Retry Now</button>
+      </div>
+    </td></tr>`;
+    setElevatorStatus(statusId, 'error', errorMsg);
+  }
+
+  // ── GRAIN: Try backend API first, fall back to CORS proxy ──
+  function populateElevator(tbodyId, statusId, result, sourceName) {
+    if (result.success && result.data && result.data.length > 0) {
+      document.getElementById(tbodyId).innerHTML = renderBidRows(result.data);
+      const ts = result.timestamp ? new Date(result.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+      const staleTag = result.stale ? ' (stale)' : '';
+      setElevatorStatus(statusId, 'live', `Live \u00B7 ${result.data.length} bids \u00B7 ${ts}${staleTag}`);
+      return true;
+    } else if (result.data && result.data.length > 0) {
+      // Scrape failed but we have cached data
+      document.getElementById(tbodyId).innerHTML = renderBidRows(result.data);
+      setElevatorStatus(statusId, 'error', `Stale data \u00B7 ${result.error || 'Scrape failed'}`);
+      return true;
+    }
+    return false;
+  }
+
+  async function fetchGrainFromBackend() {
+    setElevatorStatus('gp-status', 'loading', 'Fetching from backend...');
+    setElevatorStatus('nfp-status', 'loading', 'Fetching from backend...');
+
+    try {
+      const resp = await fetch('/api/grain', { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const cache = await resp.json();
+
+      let gpOk = false, nfpOk = false;
+
+      // Green Plains
+      if (cache.greenPlains) {
+        gpOk = populateElevator('gp-tbody', 'gp-status', cache.greenPlains, 'Green Plains');
+      }
+      if (!gpOk) {
+        setElevatorError('gp-tbody', 'gp-status', 'No bids from backend \u2014 scraper may be initializing');
+      }
+
+      // NFP
+      if (cache.nfp) {
+        nfpOk = populateElevator('nfp-tbody', 'nfp-status', cache.nfp, 'NFP');
+      }
+      if (!nfpOk) {
+        setElevatorError('nfp-tbody', 'nfp-status', 'No bids from backend \u2014 scraper may be initializing');
+      }
+
+      return true; // backend was reachable
+    } catch (err) {
+      console.warn('Backend API not available:', err.message);
+      return false; // backend unreachable
+    }
+  }
+
+  async function fetchGrainViaCORSProxy(source, tbodyId, statusId) {
+    try {
+      setElevatorStatus(statusId, 'loading', `Trying CORS proxy for ${source}...`);
+      const html = await fetchViaProxy(CONFIG.grainSources[source]);
+      const bids = parseGrainBids(html);
+      if (bids.length > 0) {
+        document.getElementById(tbodyId).innerHTML = renderBidRows(bids);
+        setElevatorStatus(statusId, 'live', `Live (proxy) \u00B7 ${bids.length} bids \u00B7 ${formatTimestamp(new Date())}`);
+      } else {
+        setElevatorError(tbodyId, statusId, 'Bids not found \u2014 site may need backend scraper');
+      }
+    } catch (err) {
+      setElevatorError(tbodyId, statusId, 'Unable to connect \u2014 run backend server for live bids');
+    }
+  }
+
+  async function fetchGrainData() {
+    // Try backend API first (works when server.js is running)
+    const backendOk = await fetchGrainFromBackend();
+
+    // If backend is not available, try CORS proxies as fallback
+    if (!backendOk) {
+      await Promise.allSettled([
+        fetchGrainViaCORSProxy('greenPlains', 'gp-tbody', 'gp-status'),
+        fetchGrainViaCORSProxy('nfp', 'nfp-tbody', 'nfp-status')
+      ]);
+    }
+  }
+
+  // ================================================================
+  //  INITIALIZATION & AUTO-REFRESH
+  // ================================================================
+
+  // Initial data load
+  fetchWeather();
+  fetchGrainData();
+
+  // Auto-refresh every 20 minutes
+  setInterval(fetchWeather, CONFIG.refreshMs);
+  setInterval(fetchGrainData, CONFIG.refreshMs);
+
+  // Refresh badge countdown
+  let lastRefresh = Date.now();
+  setInterval(() => {
+    const elapsed = Date.now() - lastRefresh;
+    const remaining = Math.max(0, CONFIG.refreshMs - elapsed);
+    const mins = Math.ceil(remaining / 60000);
+    const badge = document.getElementById('grain-refresh-badge');
+    if (badge && remaining > 0) {
+      badge.innerHTML = `<span class="live-dot"></span>Next refresh in ${mins} min`;
+    }
+  }, 30000);
+
+  // Track refresh timing
+  const origFetchWeather = fetchWeather;
+  fetchWeather = async function() {
+    await origFetchWeather();
+    lastRefresh = Date.now();
+  };
 </script>
 </body>
 </html>
