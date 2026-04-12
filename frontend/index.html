@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm OS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #ffffff;
+    --off-white: #f7f7f5;
+    --gray-50: #f4f4f2;
+    --gray-100: #e8e8e4;
+    --gray-200: #d0d0ca;
+    --gray-300: #b0b0a8;
+    --gray-500: #737368;
+    --gray-700: #3d3d38;
+    --gray-900: #1a1a16;
+    --black: #0e0e0b;
+    --orange: #e86c1a;
+    --orange-light: #f28240;
+    --orange-pale: #fdf0e6;
+    --orange-dark: #c45610;
+    --green: #3a7d44;
+    --red: #c0392b;
+    --blue: #2471a3;
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-body: 'Barlow', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.13);
+    --radius: 6px;
+    --radius-lg: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--off-white);
+    color: var(--gray-900);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--orange);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--orange);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .logo-text span {
+    color: var(--orange);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-time {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gray-300);
+    letter-spacing: 0.05em;
+  }
+
+  .header-badge {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(232,108,26,0.15);
+    color: var(--orange-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(232,108,26,0.3);
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    background: var(--gray-900);
+    display: flex;
+    padding: 0 28px;
+    gap: 2px;
+  }
+
+  .tab {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    cursor: pointer;
+    color: var(--gray-300);
+    border-bottom: 3px solid transparent;
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .tab:hover { color: var(--white); }
+
+  .tab.active {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  /* ── CONTENT AREA ── */
+  .content {
+    display: none;
+    padding: 24px 28px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .content.active { display: block; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-200);
+  }
+
+  /* ── HOME LAYOUT ── */
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 340px;
+    grid-template-rows: auto auto;
+    gap: 20px;
+  }
+
+  .home-grain { grid-column: 1; grid-row: 1 / 3; }
+  .home-cameras { grid-column: 2; grid-row: 1 / 3; }
+  .home-weather { grid-column: 3; grid-row: 1 / 3; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-100);
+    overflow: hidden;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title-icon {
+    color: var(--orange);
+    font-size: 16px;
+  }
+
+  .card-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .card-body { padding: 16px 18px; }
+
+  /* ── GRAIN MARKETS ── */
+  .grain-tabs {
+    display: flex;
+    gap: 1px;
+    background: var(--gray-100);
+    border-radius: 6px;
+    padding: 3px;
+    margin-bottom: 14px;
+  }
+
+  .grain-tab {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--gray-500);
+    transition: all 0.15s;
+  }
+
+  .grain-tab.active {
+    background: var(--white);
+    color: var(--orange);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .elevator-block {
+    margin-bottom: 20px;
+  }
+
+  .elevator-name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-700);
+    margin-bottom: 2px;
+  }
+
+  .elevator-location {
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .grain-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .grain-table thead tr {
+    background: var(--gray-50);
+  }
+
+  .grain-table th {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .grain-table th:not(:first-child) { text-align: right; }
+
+  .grain-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+  }
+
+  .grain-table td:not(:first-child) {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .grain-table tr:last-child td { border-bottom: none; }
+
+  .grain-table tr:hover td { background: var(--gray-50); }
+
+  .delivery-month {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--gray-900);
+  }
+
+  .basis-neg { color: var(--red); }
+  .basis-pos { color: var(--green); }
+
+  .change-down { color: var(--red); display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
+  .change-up { color: var(--green); display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
+  .change-flat { color: var(--gray-500); display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
+
+  .arrow-down::before { content: '▼'; font-size: 9px; }
+  .arrow-up::before { content: '▲'; font-size: 9px; }
+  .arrow-flat::before { content: '—'; font-size: 9px; }
+
+  .placeholder-row td {
+    color: var(--gray-300);
+    font-style: italic;
+    font-size: 11px;
+  }
+
+  .placeholder-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: var(--orange-pale);
+    border: 1px solid rgba(232,108,26,0.2);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .update-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gray-400);
+    text-align: right;
+    margin-top: 6px;
+  }
+
+  .grain-divider {
+    height: 1px;
+    background: var(--gray-100);
+    margin: 16px 0;
+  }
+
+  /* ── CAMERAS ── */
+  .camera-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .camera-cell {
+    aspect-ratio: 16/9;
+    background: var(--gray-900);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gray-700);
+  }
+
+  .camera-cell-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    background: rgba(0,0,0,0.65);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  .camera-cell-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--orange);
+  }
+
+  .camera-placeholder-icon {
+    font-size: 36px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+
+  .camera-placeholder-text {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    text-align: center;
+  }
+
+  .camera-placeholder-sub {
+    font-size: 10px;
+    color: var(--gray-700);
+    margin-top: 4px;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* fake camera imagery */
+  .cam-1 { background: linear-gradient(160deg, #0e1a0e 0%, #1a2e1a 40%, #0d1a0d 100%); }
+  .cam-2 { background: linear-gradient(160deg, #0e140e 0%, #162016 40%, #111611 100%); }
+  .cam-3 { background: linear-gradient(160deg, #1a1a10 0%, #2a2a18 40%, #1a1a10 100%); }
+  .cam-4 { background: linear-gradient(160deg, #0e1010 0%, #181c1c 40%, #0e1010 100%); }
+
+  .cam-grain-bins {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    opacity: 0.35;
+  }
+
+  .cam-bin {
+    background: #8a9a8a;
+    border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+  }
+
+  .camera-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .camera-select-btn {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: none;
+    border: 1px solid var(--orange);
+    padding: 5px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .camera-select-btn:hover {
+    background: var(--orange);
+    color: var(--white);
+  }
+
+  .camera-phase-tag {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* ── WEATHER ── */
+  .weather-today {
+    background: linear-gradient(135deg, var(--gray-900) 0%, #2a2a20 100%);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .weather-today::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(232,108,26,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .weather-city {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-300);
+    margin-bottom: 8px;
+  }
+
+  .weather-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .weather-icon-large {
+    font-size: 52px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+  }
+
+  .weather-temp-block {}
+
+  .weather-temp {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--white);
+    letter-spacing: -0.01em;
+  }
+
+  .weather-temp-unit {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--gray-300);
+  }
+
+  .weather-condition {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--gray-200);
+    margin-top: 2px;
+  }
+
+  .weather-today-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .weather-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .weather-stat-label {
+    font-family: var(--font-display);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  .weather-stat-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+  }
+
+  .sun-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sun-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sun-icon { font-size: 14px; }
+
+  .sun-label {
+    font-family: var(--font-display);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  .sun-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--gray-200);
+  }
+
+  /* Forecast toggle */
+  .forecast-toggle {
+    display: flex;
+    gap: 1px;
+    background: var(--gray-100);
+    border-radius: 6px;
+    padding: 3px;
+    margin-bottom: 12px;
+  }
+
+  .forecast-btn {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--gray-500);
+    transition: all 0.15s;
+  }
+
+  .forecast-btn.active {
+    background: var(--white);
+    color: var(--orange);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .forecast-days { display: flex; flex-direction: column; gap: 4px; }
+
+  .forecast-day {
+    display: grid;
+    grid-template-columns: 56px 24px 1fr auto auto auto auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-100);
+  }
+
+  .forecast-dayname {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--gray-900);
+  }
+
+  .forecast-icon { font-size: 18px; text-align: center; }
+
+  .forecast-bar-wrap {
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .forecast-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--orange));
+    border-radius: 2px;
+  }
+
+  .forecast-hi {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--orange);
+    text-align: right;
+    min-width: 34px;
+  }
+
+  .forecast-lo {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--blue);
+    text-align: right;
+    min-width: 34px;
+  }
+
+  .forecast-rain {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 36px;
+  }
+
+  .forecast-rain-pct {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--blue);
+  }
+
+  .forecast-rain-in {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gray-500);
+  }
+
+  .forecast-wind {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gray-500);
+    text-align: right;
+    min-width: 44px;
+  }
+
+  /* GDU block */
+  .gdu-block {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--orange-pale);
+    border-radius: var(--radius);
+    border: 1px solid rgba(232,108,26,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gdu-left {}
+
+  .gdu-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--orange-dark);
+    margin-bottom: 2px;
+  }
+
+  .gdu-value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--orange);
+    line-height: 1;
+  }
+
+  .gdu-unit {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--orange-light);
+  }
+
+  .gdu-since {
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  .gdu-date-input {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border: 1px solid rgba(232,108,26,0.3);
+    background: var(--white);
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: var(--gray-700);
+    cursor: pointer;
+  }
+
+  /* ── CAMERAS TAB ── */
+  .cam-setup-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .cam-slot {
+    background: var(--white);
+    border: 1.5px dashed var(--gray-200);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cam-slot.configured {
+    border-style: solid;
+    border-color: var(--orange);
+    background: var(--orange-pale);
+  }
+
+  .cam-slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cam-slot-num {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  .cam-slot.configured .cam-slot-num { color: var(--orange-dark); }
+
+  .cam-slot-name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+
+  .cam-slot-ip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gray-500);
+  }
+
+  .cam-slot-input {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: var(--gray-700);
+  }
+
+  .cam-slot-input::placeholder { color: var(--gray-300); }
+
+  .cam-slot-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .btn-sm {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+  }
+
+  .btn-orange {
+    background: var(--orange);
+    color: var(--white);
+    border-color: var(--orange);
+  }
+
+  .btn-orange:hover { background: var(--orange-dark); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--gray-500);
+    border-color: var(--gray-200);
+  }
+
+  .btn-outline:hover { border-color: var(--gray-400); color: var(--gray-700); }
+
+  .home-display-selector {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .selector-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 12px;
+  }
+
+  .selector-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .selector-slot {
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .selector-slot.selected {
+    border-color: var(--orange);
+    background: var(--orange-pale);
+  }
+
+  .selector-slot-pos {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);
+    text-transform: uppercase;
+  }
+
+  .selector-slot.selected .selector-slot-pos { color: var(--orange); }
+
+  .selector-slot-cam {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-700);
+    text-align: center;
+  }
+
+  .phase2-banner {
+    background: var(--gray-900);
+    color: var(--gray-300);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    border-left: 4px solid var(--orange);
+  }
+
+  .phase2-icon { font-size: 20px; }
+
+  /* ── BLANK TABS ── */
+  .blank-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 16px;
+    color: var(--gray-300);
+  }
+
+  .blank-tab-icon { font-size: 56px; }
+
+  .blank-tab-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+  }
+
+  .blank-tab-sub {
+    font-size: 13px;
+    color: var(--gray-300);
+  }
+
+  .coming-soon-badge {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: var(--orange-pale);
+    border: 1px solid rgba(232,108,26,0.25);
+    padding: 5px 16px;
+    border-radius: 20px;
+  }
+
+  /* ── UTILITIES ── */
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+
+  .live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--orange);
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* hidden forecast content */
+  .forecast-3 { display: flex; flex-direction: column; gap: 4px; }
+  .forecast-10 { display: none; flex-direction: column; gap: 4px; }
+  .forecast-10.show { display: flex; }
+  .forecast-3.hide { display: none; }
+
+  .rainfall-ytd {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* scrollable grain area */
+  .grain-scroll {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .grain-scroll::-webkit-scrollbar { width: 4px; }
+  .grain-scroll::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 2px; }
+  .grain-scroll::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🌽</div>
+    <div class="logo-text">Farm<span>OS</span></div>
+    <div style="height:28px; width:1px; background:rgba(255,255,255,0.12); margin: 0 4px;"></div>
+    <div style="font-family:var(--font-body); font-size:12px; font-weight:400; color:var(--gray-300); letter-spacing:0.06em; line-height:1.3;">Janssen<br>Hoffman</div>
+  </div>
+  <div class="header-right">
+    <div class="header-time" id="clock">Saturday, April 11, 2026 · 07:42 AM CDT</div>
+    <div class="header-badge"><span class="live-dot"></span>Live</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('home', this)">Home</div>
+  <div class="tab" onclick="switchTab('cameras', this)">Cameras</div>
+  <div class="tab" onclick="switchTab('fieldops', this)">Field Ops</div>
+  <div class="tab" onclick="switchTab('grainops', this)">Grain Ops</div>
+</div>
+
+<!-- HOME TAB -->
+<div class="content active" id="tab-home">
+  <div class="home-grid">
+
+    <!-- GRAIN MARKETS -->
+    <div class="home-grain">
+      <div class="card" style="height:100%;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-title-icon">📈</span> Grain Markets
+          </div>
+          <div class="card-badge"><span class="live-dot"></span>Updates every 20 min</div>
+        </div>
+        <div class="card-body">
+
+          <!-- Grain commodity toggle -->
+          <div class="grain-tabs">
+            <div class="grain-tab active" onclick="switchGrain('corn', this)">🌽 Corn</div>
+            <div class="grain-tab" onclick="switchGrain('soy', this)">🫘 Soybeans</div>
+          </div>
+
+          <!-- CORN -->
+          <div id="grain-corn">
+            <div class="grain-scroll">
+
+              <!-- Green Plains -->
+              <div class="elevator-block">
+                <div class="elevator-name">Green Plains Renewable Energy</div>
+                <div class="elevator-location">Superior, IA · gpreinc.com</div>
+                <table class="grain-table">
+                  <thead>
+                    <tr>
+                      <th>Delivery</th>
+                      <th>Cash Bid</th>
+                      <th>Basis</th>
+                      <th>Change</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="delivery-month">APR 26</span></td>
+                      <td>4.08</td>
+                      <td class="basis-neg">-0.33</td>
+                      <td><span class="change-down"><span class="arrow-down"></span>-0.04</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">MAY 26</span></td>
+                      <td>4.04</td>
+                      <td class="basis-neg">-0.37</td>
+                      <td><span class="change-down"><span class="arrow-down"></span>-0.03</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">JUN 26</span></td>
+                      <td>4.06</td>
+                      <td class="basis-neg">-0.45</td>
+                      <td><span class="change-down"><span class="arrow-down"></span>-0.02</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">JUL 26</span></td>
+                      <td>4.10</td>
+                      <td class="basis-neg">-0.41</td>
+                      <td><span class="change-flat"><span class="arrow-flat"></span>0.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">SEP 26</span></td>
+                      <td>4.18</td>
+                      <td class="basis-neg">-0.38</td>
+                      <td><span class="change-up"><span class="arrow-up"></span>+0.01</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="update-time">Static mockup · Data not live</div>
+              </div>
+
+              <div class="grain-divider"></div>
+
+              <!-- New Fashion Pork -->
+              <div class="elevator-block">
+                <div class="elevator-name">New Fashion Pork</div>
+                <div class="elevator-location">Estherville, IA · nfpinc.com</div>
+                <table class="grain-table">
+                  <thead>
+                    <tr>
+                      <th>Delivery</th>
+                      <th>Cash Bid</th>
+                      <th>Basis</th>
+                      <th>Change</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="delivery-month">APR 26</span></td>
+                      <td>4.12</td>
+                      <td class="basis-neg">-0.29</td>
+                      <td><span class="change-down"><span class="arrow-down"></span>-0.05</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">MAY 26</span></td>
+                      <td>4.09</td>
+                      <td class="basis-neg">-0.32</td>
+                      <td><span class="change-down"><span class="arrow-down"></span>-0.03</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">JUN 26</span></td>
+                      <td>4.11</td>
+                      <td class="basis-neg">-0.40</td>
+                      <td><span class="change-flat"><span class="arrow-flat"></span>0.00</span></td>
+                    </tr>
+                    <tr>
+                      <td><span class="delivery-month">JUL 26</span></td>
+                      <td>4.14</td>
+                      <td class="basis-neg">-0.37</td>
+                      <td><span class="change-up"><span class="arrow-up"></span>+0.02</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="update-time">Static mockup · Data not live</div>
+              </div>
+
+              <div class="grain-divider"></div>
+
+              <!-- Valero placeholder -->
+              <div class="elevator-block">
+                <div class="elevator-name">Valero Ethanol</div>
+                <div class="elevator-location">Welcome, MN · portal.bushelpowered.com</div>
+                <table class="grain-table">
+                  <thead>
+                    <tr>
+                      <th>Delivery</th>
+                      <th>Cash Bid</th>
+                      <th>Basis</th>
+                      <th>Change</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="placeholder-row">
+                      <td colspan="4" style="text-align:center; padding: 14px 0;">
+                        <span class="placeholder-badge">⚙ Phase 2 — Integration Pending</span>
+                        <div style="margin-top:6px; font-size:11px; color:var(--gray-400);">Bushel 2FA login integration required</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SOYBEANS -->
+          <div id="grain-soy" style="display:none;">
+            <div class="grain-scroll">
+              <div class="elevator-block">
+                <div class="elevator-name">CHS Inc.</div>
+                <div class="elevator-location">Fairmont, MN</div>
+                <table class="grain-table">
+                  <thead>
+                    <tr>
+                      <th>Delivery</th>
+                      <th>Cash Bid</th>
+                      <th>Basis</th>
+                      <th>Change</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="placeholder-row">
+                      <td colspan="4" style="text-align:center; padding: 14px 0;">
+                        <span class="placeholder-badge">⚙ Phase 2 — Integration Pending</span>
+                        <div style="margin-top:6px; font-size:11px; color:var(--gray-400);">Login-based scraping integration required</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMERAS -->
+    <div class="home-cameras">
+      <div class="card" style="height:100%;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-title-icon">📷</span> Live Cameras
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div class="card-badge">4 of 16 shown</div>
+            <div class="camera-phase-tag">Phase 2</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="camera-grid">
+            <!-- Camera 1 -->
+            <div class="camera-cell cam-1">
+              <div class="cam-grain-bins">
+                <div class="cam-bin" style="width:28px;height:54px;"></div>
+                <div class="cam-bin" style="width:28px;height:64px;"></div>
+                <div class="cam-bin" style="width:28px;height:48px;"></div>
+              </div>
+              <div class="camera-cell-label">Bin Site N</div>
+              <div class="camera-cell-status" style="background:#888;"></div>
+              <div class="camera-placeholder-icon">📹</div>
+              <div class="camera-placeholder-text">Awaiting Stream</div>
+              <div class="camera-placeholder-sub">NVR · Location 1</div>
+            </div>
+            <!-- Camera 2 -->
+            <div class="camera-cell cam-2">
+              <div class="camera-cell-label">Shop East</div>
+              <div class="camera-cell-status" style="background:#888;"></div>
+              <div class="camera-placeholder-icon">📹</div>
+              <div class="camera-placeholder-text">Awaiting Stream</div>
+              <div class="camera-placeholder-sub">NVR · Location 1</div>
+            </div>
+            <!-- Camera 3 -->
+            <div class="camera-cell cam-3">
+              <div class="camera-cell-label">Bin Site S</div>
+              <div class="camera-cell-status" style="background:#888;"></div>
+              <div class="camera-placeholder-icon">📹</div>
+              <div class="camera-placeholder-text">Awaiting Stream</div>
+              <div class="camera-placeholder-sub">NVR · Location 2</div>
+            </div>
+            <!-- Camera 4 -->
+            <div class="camera-cell cam-4">
+              <div class="camera-cell-label">Drive Approach</div>
+              <div class="camera-cell-status" style="background:#888;"></div>
+              <div class="camera-placeholder-icon">📹</div>
+              <div class="camera-placeholder-text">Awaiting Stream</div>
+              <div class="camera-placeholder-sub">NVR · Location 3</div>
+            </div>
+          </div>
+
+          <div class="camera-footer mt-8">
+            <button class="camera-select-btn" onclick="switchTab('cameras', document.querySelectorAll('.tab')[1])">Manage Cameras →</button>
+            <span style="font-size:11px; color:var(--gray-400); font-style:italic;">Pi relay setup required for live streams</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="home-weather">
+      <div class="card" style="height:100%;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="card-title-icon">🌤</span> Weather
+          </div>
+          <div class="card-badge">Dunnell, MN 56127</div>
+        </div>
+        <div class="card-body" style="padding: 12px 14px;">
+
+          <!-- TODAY PANEL (always visible) -->
+          <div class="weather-today">
+            <div class="weather-city">📍 Dunnell, MN · Today</div>
+            <div class="weather-main">
+              <div class="weather-icon-large">⛅</div>
+              <div class="weather-temp-block">
+                <div class="weather-temp">58<span class="weather-temp-unit">°F</span></div>
+                <div class="weather-condition">Partly Cloudy</div>
+              </div>
+            </div>
+
+            <div class="weather-today-grid">
+              <div class="weather-stat">
+                <div class="weather-stat-label">Wind</div>
+                <div class="weather-stat-value">12 mph SSW</div>
+              </div>
+              <div class="weather-stat">
+                <div class="weather-stat-label">Humidity</div>
+                <div class="weather-stat-value">64%</div>
+              </div>
+              <div class="weather-stat">
+                <div class="weather-stat-label">Rain Today</div>
+                <div class="weather-stat-value">0.00"</div>
+              </div>
+              <div class="weather-stat">
+                <div class="weather-stat-label">Last 24 hrs</div>
+                <div class="weather-stat-value">0.12"</div>
+              </div>
+            </div>
+
+            <div class="rainfall-ytd">
+              <div class="weather-stat">
+                <div class="weather-stat-label">YTD Rain</div>
+                <div class="weather-stat-value">3.41"</div>
+              </div>
+              <div class="weather-stat">
+                <div class="weather-stat-label">Hi / Lo</div>
+                <div class="weather-stat-value">63° / 44°</div>
+              </div>
+              <div class="weather-stat">
+                <div class="weather-stat-label">Dew Point</div>
+                <div class="weather-stat-value">46°F</div>
+              </div>
+            </div>
+
+            <div class="sun-row">
+              <div class="sun-item">
+                <span class="sun-icon">🌅</span>
+                <div>
+                  <div class="sun-label">Sunrise</div>
+                  <div class="sun-value">6:24 AM</div>
+                </div>
+              </div>
+              <div class="sun-item">
+                <span class="sun-icon">🌇</span>
+                <div>
+                  <div class="sun-label">Sunset</div>
+                  <div class="sun-value">7:51 PM</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GDU BLOCK -->
+          <div class="gdu-block">
+            <div class="gdu-left">
+              <div class="gdu-label">Growing Degree Units (Base 50°F)</div>
+              <div class="gdu-value">12 <span class="gdu-unit">GDU</span></div>
+              <div class="gdu-since">Since April 10, 2026</div>
+            </div>
+            <input class="gdu-date-input" type="date" value="2026-04-10">
+          </div>
+
+          <!-- FORECAST TOGGLE -->
+          <div class="forecast-toggle mt-12">
+            <div class="forecast-btn active" onclick="toggleForecast(3, this)">3-Day</div>
+            <div class="forecast-btn" onclick="toggleForecast(10, this)">10-Day</div>
+          </div>
+
+          <!-- 3-DAY FORECAST -->
+          <div class="forecast-3" id="fc3">
+            <div class="forecast-day">
+              <div class="forecast-dayname">Sun</div>
+              <div class="forecast-icon">🌧</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:78%"></div></div>
+              <div class="forecast-hi">63°</div>
+              <div class="forecast-lo">41°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 75%</span><span class="forecast-rain-in">0.48"</span></div>
+              <div class="forecast-wind">14 mph<br><span style="font-size:9px;">SE</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Mon</div>
+              <div class="forecast-icon">⛅</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:30%"></div></div>
+              <div class="forecast-hi">59°</div>
+              <div class="forecast-lo">38°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 20%</span><span class="forecast-rain-in">0.04"</span></div>
+              <div class="forecast-wind">18 mph<br><span style="font-size:9px;">NW</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Tue</div>
+              <div class="forecast-icon">☀️</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:5%"></div></div>
+              <div class="forecast-hi">62°</div>
+              <div class="forecast-lo">40°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 5%</span><span class="forecast-rain-in">0.00"</span></div>
+              <div class="forecast-wind">10 mph<br><span style="font-size:9px;">SW</span></div>
+            </div>
+          </div>
+
+          <!-- 10-DAY FORECAST -->
+          <div class="forecast-10" id="fc10">
+            <div class="forecast-day">
+              <div class="forecast-dayname">Sun</div>
+              <div class="forecast-icon">🌧</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:78%"></div></div>
+              <div class="forecast-hi">63°</div>
+              <div class="forecast-lo">41°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 75%</span><span class="forecast-rain-in">0.48"</span></div>
+              <div class="forecast-wind">14 mph<br><span style="font-size:9px;">SE</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Mon</div>
+              <div class="forecast-icon">⛅</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:30%"></div></div>
+              <div class="forecast-hi">59°</div>
+              <div class="forecast-lo">38°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 20%</span><span class="forecast-rain-in">0.04"</span></div>
+              <div class="forecast-wind">18 mph<br><span style="font-size:9px;">NW</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Tue</div>
+              <div class="forecast-icon">☀️</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:5%"></div></div>
+              <div class="forecast-hi">62°</div>
+              <div class="forecast-lo">40°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 5%</span><span class="forecast-rain-in">0.00"</span></div>
+              <div class="forecast-wind">10 mph<br><span style="font-size:9px;">SW</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Wed</div>
+              <div class="forecast-icon">🌤</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:15%"></div></div>
+              <div class="forecast-hi">66°</div>
+              <div class="forecast-lo">44°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 10%</span><span class="forecast-rain-in">0.00"</span></div>
+              <div class="forecast-wind">8 mph<br><span style="font-size:9px;">S</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Thu</div>
+              <div class="forecast-icon">🌧</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:65%"></div></div>
+              <div class="forecast-hi">61°</div>
+              <div class="forecast-lo">47°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 60%</span><span class="forecast-rain-in">0.31"</span></div>
+              <div class="forecast-wind">16 mph<br><span style="font-size:9px;">E</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Fri</div>
+              <div class="forecast-icon">⛈</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:85%"></div></div>
+              <div class="forecast-hi">58°</div>
+              <div class="forecast-lo">45°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 80%</span><span class="forecast-rain-in">0.72"</span></div>
+              <div class="forecast-wind">22 mph<br><span style="font-size:9px;">SE</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Sat</div>
+              <div class="forecast-icon">⛅</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:25%"></div></div>
+              <div class="forecast-hi">64°</div>
+              <div class="forecast-lo">43°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 20%</span><span class="forecast-rain-in">0.05"</span></div>
+              <div class="forecast-wind">12 mph<br><span style="font-size:9px;">W</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Sun</div>
+              <div class="forecast-icon">☀️</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:10%"></div></div>
+              <div class="forecast-hi">68°</div>
+              <div class="forecast-lo">46°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 5%</span><span class="forecast-rain-in">0.00"</span></div>
+              <div class="forecast-wind">9 mph<br><span style="font-size:9px;">SW</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Mon</div>
+              <div class="forecast-icon">🌤</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:20%"></div></div>
+              <div class="forecast-hi">70°</div>
+              <div class="forecast-lo">48°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 15%</span><span class="forecast-rain-in">0.00"</span></div>
+              <div class="forecast-wind">11 mph<br><span style="font-size:9px;">S</span></div>
+            </div>
+            <div class="forecast-day">
+              <div class="forecast-dayname">Tue</div>
+              <div class="forecast-icon">🌧</div>
+              <div class="forecast-bar-wrap"><div class="forecast-bar" style="width:55%"></div></div>
+              <div class="forecast-hi">65°</div>
+              <div class="forecast-lo">50°</div>
+              <div class="forecast-rain"><span class="forecast-rain-pct">☔ 50%</span><span class="forecast-rain-in">0.22"</span></div>
+              <div class="forecast-wind">19 mph<br><span style="font-size:9px;">NE</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /home-grid -->
+</div>
+
+<!-- CAMERAS TAB -->
+<div class="content" id="tab-cameras">
+  <div class="section-label">Camera Configuration — Up to 16 Cameras</div>
+
+  <div class="cam-setup-grid">
+    <!-- Configured cameras (1-4 as examples) -->
+    <div class="cam-slot configured">
+      <div class="cam-slot-header">
+        <span class="cam-slot-num">Camera 01</span>
+        <span style="font-size:14px;">✅</span>
+      </div>
+      <div class="cam-slot-name">Bin Site North</div>
+      <div class="cam-slot-ip">192.168.1.10:37777</div>
+      <div style="font-size:10px; color:var(--gray-500);">NVR: Location 1 · Ch 1 · Amcrest</div>
+      <div class="cam-slot-actions">
+        <button class="btn-sm btn-orange">Edit</button>
+        <button class="btn-sm btn-outline">Test</button>
+      </div>
+    </div>
+
+    <div class="cam-slot configured">
+      <div class="cam-slot-header">
+        <span class="cam-slot-num">Camera 02</span>
+        <span style="font-size:14px;">✅</span>
+      </div>
+      <div class="cam-slot-name">Shop East</div>
+      <div class="cam-slot-ip">192.168.1.10:37777</div>
+      <div style="font-size:10px; color:var(--gray-500);">NVR: Location 1 · Ch 2 · Amcrest</div>
+      <div class="cam-slot-actions">
+        <button class="btn-sm btn-orange">Edit</button>
+        <button class="btn-sm btn-outline">Test</button>
+      </div>
+    </div>
+
+    <div class="cam-slot configured">
+      <div class="cam-slot-header">
+        <span class="cam-slot-num">Camera 03</span>
+        <span style="font-size:14px;">✅</span>
+      </div>
+      <div class="cam-slot-name">Bin Site South</div>
+      <div class="cam-slot-ip">64.112.88.42:37777</div>
+      <div style="font-size:10px; color:var(--gray-500);">NVR: Location 2 · Ch 1 · Amcrest</div>
+      <div class="cam-slot-actions">
+        <button class="btn-sm btn-orange">Edit</button>
+        <button class="btn-sm btn-outline">Test</button>
+      </div>
+    </div>
+
+    <div class="cam-slot configured">
+      <div class="cam-slot-header">
+        <span class="cam-slot-num">Camera 04</span>
+        <span style="font-size:14px;">✅</span>
+      </div>
+      <div class="cam-slot-name">Drive Approach</div>
+      <div class="cam-slot-ip">74.56.110.18:37777</div>
+      <div style="font-size:10px; color:var(--gray-500);">NVR: Location 3 · Ch 1 · Amcrest</div>
+      <div class="cam-slot-actions">
+        <button class="btn-sm btn-orange">Edit</button>
+        <button class="btn-sm btn-outline">Test</button>
+      </div>
+    </div>
+
+    <!-- Empty slots 5-16 -->
+    <script>
+      for(let i=5;i<=16;i++){
+        document.write(`
+          <div class="cam-slot">
+            <div class="cam-slot-header">
+              <span class="cam-slot-num">Camera ${String(i).padStart(2,'0')}</span>
+            </div>
+            <input class="cam-slot-input" placeholder="Camera name...">
+            <input class="cam-slot-input" placeholder="WAN IP:Port (e.g. 64.12.88.42:37777)">
+            <input class="cam-slot-input" placeholder="NVR location / channel">
+            <div class="cam-slot-actions">
+              <button class="btn-sm btn-orange">Save</button>
+            </div>
+          </div>
+        `);
+      }
+    </script>
+  </div>
+
+  <!-- Home display selector -->
+  <div class="section-label" style="margin-top:24px;">Home Page Display — Select 4 Cameras</div>
+  <div class="home-display-selector">
+    <div class="selector-label">Drag or select which cameras appear on the home dashboard</div>
+    <div class="selector-grid">
+      <div class="selector-slot selected">
+        <div class="selector-slot-pos">Position 1 (Top Left)</div>
+        <div style="font-size:20px;">📹</div>
+        <div class="selector-slot-cam">Bin Site North</div>
+      </div>
+      <div class="selector-slot selected">
+        <div class="selector-slot-pos">Position 2 (Top Right)</div>
+        <div style="font-size:20px;">📹</div>
+        <div class="selector-slot-cam">Shop East</div>
+      </div>
+      <div class="selector-slot selected">
+        <div class="selector-slot-pos">Position 3 (Bot Left)</div>
+        <div style="font-size:20px;">📹</div>
+        <div class="selector-slot-cam">Bin Site South</div>
+      </div>
+      <div class="selector-slot selected">
+        <div class="selector-slot-pos">Position 4 (Bot Right)</div>
+        <div style="font-size:20px;">📹</div>
+        <div class="selector-slot-cam">Drive Approach</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase2-banner">
+    <div class="phase2-icon">⚙️</div>
+    <div>
+      <strong style="color:var(--white);">Phase 2 — Camera Streaming</strong><br>
+      Live RTSP→HLS relay requires a Raspberry Pi at each NVR location running FFmpeg + Cloudflare Tunnel. Camera configuration above will be wired to the live relay once Phase 2 is implemented. Ubiquiti camera support will be added in this same phase.
+    </div>
+  </div>
+</div>
+
+<!-- FIELD OPS TAB -->
+<div class="content" id="tab-fieldops">
+  <div class="blank-tab">
+    <div class="blank-tab-icon">🚜</div>
+    <div class="blank-tab-title">Field Operations</div>
+    <div class="blank-tab-sub">Planting records, field maps, equipment logs, and more — coming soon.</div>
+    <div class="coming-soon-badge">In Development</div>
+  </div>
+</div>
+
+<!-- GRAIN OPS TAB -->
+<div class="content" id="tab-grainops">
+  <div class="blank-tab">
+    <div class="blank-tab-icon">🌾</div>
+    <div class="blank-tab-title">Grain Operations</div>
+    <div class="blank-tab-sub">Bin inventory, load tracking, contracts, and settlements — coming soon.</div>
+    <div class="coming-soon-badge">In Development</div>
+  </div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    const dateStr = now.toLocaleDateString('en-US', opts);
+    const timeStr = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', timeZoneName:'short' });
+    document.getElementById('clock').textContent = `${dateStr} · ${timeStr}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Tab switching
+  function switchTab(tabId, el) {
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    el.classList.add('active');
+  }
+
+  // Grain tab toggle
+  function switchGrain(type, el) {
+    document.querySelectorAll('.grain-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('grain-corn').style.display = type === 'corn' ? 'block' : 'none';
+    document.getElementById('grain-soy').style.display = type === 'soy' ? 'block' : 'none';
+  }
+
+  // Forecast toggle
+  function toggleForecast(days, el) {
+    document.querySelectorAll('.forecast-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    const fc3 = document.getElementById('fc3');
+    const fc10 = document.getElementById('fc10');
+    if (days === 3) {
+      fc3.classList.remove('hide'); fc3.style.display = 'flex';
+      fc10.style.display = 'none';
+    } else {
+      fc3.style.display = 'none';
+      fc10.style.display = 'flex';
+    }
+  }
+</script>
+</body>
+</html>
