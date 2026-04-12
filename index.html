@@ -1951,16 +1951,9 @@
     const yesterdayIdx = todayIdx > 0 ? todayIdx - 1 : 0;
     document.getElementById('wx-rain-24h').textContent = `${(d.precipitation_sum[yesterdayIdx] || 0).toFixed(2)}"`;
 
-    // YTD Rain — sum from Jan 1 to today
-    const yearStr = new Date().getFullYear().toString();
-    const jan1Str = `${yearStr}-01-01`;
-    let ytdRain = 0;
-    for (let i = 0; i < d.time.length && i <= todayIdx; i++) {
-      if (d.time[i] >= jan1Str && d.time[i] <= d.time[todayIdx]) {
-        ytdRain += d.precipitation_sum[i] || 0;
-      }
-    }
-    document.getElementById('wx-ytd-rain').textContent = `${ytdRain.toFixed(2)}"`;
+    // YTD Rain — computed asynchronously via archive API for full accuracy
+    document.getElementById('wx-ytd-rain').textContent = 'calc...';
+    fetchYTDRain(d, todayIdx);
 
     // Hi / Lo
     document.getElementById('wx-hilo').textContent =
@@ -2058,8 +2051,66 @@
     if (weatherCache) updateGDU(weatherCache);
   });
 
+  // ── YTD RAIN — Archive API for full accuracy ──
+  async function fetchYTDRain(dailyData, todayIdx) {
+    const yearStr = new Date().getFullYear().toString();
+    const jan1Str = `${yearStr}-01-01`;
+    const todayStr = dailyData.time[todayIdx];
+
+    // Sum what we already have from the forecast API's past_days window
+    let forecastRain = 0;
+    let earliestForecastDate = null;
+    for (let i = 0; i < dailyData.time.length && i <= todayIdx; i++) {
+      if (dailyData.time[i] >= jan1Str && dailyData.time[i] <= todayStr) {
+        forecastRain += dailyData.precipitation_sum[i] || 0;
+        if (!earliestForecastDate) earliestForecastDate = dailyData.time[i];
+      }
+    }
+
+    // If forecast data covers all the way back to Jan 1, we're done
+    if (earliestForecastDate <= jan1Str) {
+      document.getElementById('wx-ytd-rain').textContent = `${forecastRain.toFixed(2)}"`;
+      return;
+    }
+
+    // Otherwise, fetch the gap from the archive API (Jan 1 to day before earliest)
+    try {
+      const gapEnd = new Date(earliestForecastDate);
+      gapEnd.setDate(gapEnd.getDate() - 1);
+      const gapEndStr = gapEnd.toISOString().slice(0, 10);
+
+      if (gapEndStr < jan1Str) {
+        document.getElementById('wx-ytd-rain').textContent = `${forecastRain.toFixed(2)}"`;
+        return;
+      }
+
+      const archiveUrl = `https://archive-api.open-meteo.com/v1/archive?` +
+        `latitude=${CONFIG.lat}&longitude=${CONFIG.lon}` +
+        `&start_date=${jan1Str}&end_date=${gapEndStr}` +
+        `&daily=precipitation_sum&precipitation_unit=inch&timezone=${CONFIG.timezone}`;
+
+      const resp = await fetch(archiveUrl);
+      if (!resp.ok) throw new Error(`Archive API: HTTP ${resp.status}`);
+      const archive = await resp.json();
+
+      let archiveRain = 0;
+      if (archive.daily && archive.daily.precipitation_sum) {
+        for (const p of archive.daily.precipitation_sum) {
+          archiveRain += p || 0;
+        }
+      }
+
+      const totalYTD = forecastRain + archiveRain;
+      document.getElementById('wx-ytd-rain').textContent = `${totalYTD.toFixed(2)}"`;
+    } catch (err) {
+      console.warn('Archive API fallback for YTD rain:', err);
+      // Fall back to what we have from the forecast API
+      document.getElementById('wx-ytd-rain').textContent = `~${forecastRain.toFixed(2)}"`;
+    }
+  }
+
   // ================================================================
-  //  GRAIN MARKETS — CORS Proxy Scraping
+  //  GRAIN MARKETS — Backend API + CORS Proxy Fallback
   // ================================================================
 
   // Try fetching through multiple CORS proxies
@@ -2185,52 +2236,91 @@
     document.getElementById(tbodyId).innerHTML = `<tr><td colspan="4">
       <div class="grain-error-msg">
         <div class="error-title">${errorMsg}</div>
-        <div class="error-detail">Elevator website scraping requires a backend server (Phase 2). CORS restrictions prevent direct browser access.</div>
+        <div class="error-detail">Start the backend server: npm install &amp;&amp; npm start</div>
         <button class="retry-btn" onclick="fetchGrainData()">Retry Now</button>
       </div>
     </td></tr>`;
     setElevatorStatus(statusId, 'error', errorMsg);
   }
 
-  // ── GREEN PLAINS ──
-  async function fetchGreenPlains() {
+  // ── GRAIN: Try backend API first, fall back to CORS proxy ──
+  function populateElevator(tbodyId, statusId, result, sourceName) {
+    if (result.success && result.data && result.data.length > 0) {
+      document.getElementById(tbodyId).innerHTML = renderBidRows(result.data);
+      const ts = result.timestamp ? new Date(result.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+      const staleTag = result.stale ? ' (stale)' : '';
+      setElevatorStatus(statusId, 'live', `Live \u00B7 ${result.data.length} bids \u00B7 ${ts}${staleTag}`);
+      return true;
+    } else if (result.data && result.data.length > 0) {
+      // Scrape failed but we have cached data
+      document.getElementById(tbodyId).innerHTML = renderBidRows(result.data);
+      setElevatorStatus(statusId, 'error', `Stale data \u00B7 ${result.error || 'Scrape failed'}`);
+      return true;
+    }
+    return false;
+  }
+
+  async function fetchGrainFromBackend() {
+    setElevatorStatus('gp-status', 'loading', 'Fetching from backend...');
+    setElevatorStatus('nfp-status', 'loading', 'Fetching from backend...');
+
     try {
-      setElevatorStatus('gp-status', 'loading', 'Fetching from gpreinc.com...');
-      const html = await fetchViaProxy(CONFIG.grainSources.greenPlains);
-      const bids = parseGrainBids(html);
-      if (bids.length > 0) {
-        document.getElementById('gp-tbody').innerHTML = renderBidRows(bids);
-        setElevatorStatus('gp-status', 'live', `Live \u00B7 ${bids.length} bids \u00B7 ${formatTimestamp(new Date())}`);
-      } else {
-        // Page fetched but no bids found — site may use JS rendering
-        setElevatorError('gp-tbody', 'gp-status', 'Page loaded but bids not found in HTML');
+      const resp = await fetch('/api/grain', { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const cache = await resp.json();
+
+      let gpOk = false, nfpOk = false;
+
+      // Green Plains
+      if (cache.greenPlains) {
+        gpOk = populateElevator('gp-tbody', 'gp-status', cache.greenPlains, 'Green Plains');
       }
+      if (!gpOk) {
+        setElevatorError('gp-tbody', 'gp-status', 'No bids from backend \u2014 scraper may be initializing');
+      }
+
+      // NFP
+      if (cache.nfp) {
+        nfpOk = populateElevator('nfp-tbody', 'nfp-status', cache.nfp, 'NFP');
+      }
+      if (!nfpOk) {
+        setElevatorError('nfp-tbody', 'nfp-status', 'No bids from backend \u2014 scraper may be initializing');
+      }
+
+      return true; // backend was reachable
     } catch (err) {
-      console.warn('Green Plains fetch failed:', err);
-      setElevatorError('gp-tbody', 'gp-status', 'Unable to connect \u2014 CORS blocked');
+      console.warn('Backend API not available:', err.message);
+      return false; // backend unreachable
     }
   }
 
-  // ── NEW FASHION PORK ──
-  async function fetchNFP() {
+  async function fetchGrainViaCORSProxy(source, tbodyId, statusId) {
     try {
-      setElevatorStatus('nfp-status', 'loading', 'Fetching from nfpinc.com...');
-      const html = await fetchViaProxy(CONFIG.grainSources.nfp);
+      setElevatorStatus(statusId, 'loading', `Trying CORS proxy for ${source}...`);
+      const html = await fetchViaProxy(CONFIG.grainSources[source]);
       const bids = parseGrainBids(html);
       if (bids.length > 0) {
-        document.getElementById('nfp-tbody').innerHTML = renderBidRows(bids);
-        setElevatorStatus('nfp-status', 'live', `Live \u00B7 ${bids.length} bids \u00B7 ${formatTimestamp(new Date())}`);
+        document.getElementById(tbodyId).innerHTML = renderBidRows(bids);
+        setElevatorStatus(statusId, 'live', `Live (proxy) \u00B7 ${bids.length} bids \u00B7 ${formatTimestamp(new Date())}`);
       } else {
-        setElevatorError('nfp-tbody', 'nfp-status', 'Page loaded but bids not found in HTML');
+        setElevatorError(tbodyId, statusId, 'Bids not found \u2014 site may need backend scraper');
       }
     } catch (err) {
-      console.warn('NFP fetch failed:', err);
-      setElevatorError('nfp-tbody', 'nfp-status', 'Unable to connect \u2014 CORS blocked');
+      setElevatorError(tbodyId, statusId, 'Unable to connect \u2014 run backend server for live bids');
     }
   }
 
   async function fetchGrainData() {
-    await Promise.allSettled([fetchGreenPlains(), fetchNFP()]);
+    // Try backend API first (works when server.js is running)
+    const backendOk = await fetchGrainFromBackend();
+
+    // If backend is not available, try CORS proxies as fallback
+    if (!backendOk) {
+      await Promise.allSettled([
+        fetchGrainViaCORSProxy('greenPlains', 'gp-tbody', 'gp-status'),
+        fetchGrainViaCORSProxy('nfp', 'nfp-tbody', 'nfp-status')
+      ]);
+    }
   }
 
   // ================================================================

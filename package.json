@@ -1,0 +1,21 @@
+{
+  "name": "farmos-dashboard",
+  "version": "1.0.0",
+  "description": "Farm OS — Janssen & Hoffman Farm Dashboard with live grain markets and weather",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "scrape": "node -e \"require('./backend/scrapers/green-plains').scrape().then(console.log)\"",
+    "scrape:nfp": "node -e \"require('./backend/scrapers/nfp').scrape().then(console.log)\""
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "playwright": "^1.42.0",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.4.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
