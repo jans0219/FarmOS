@@ -1177,9 +1177,204 @@
     text-align: right;
     margin-top: 8px;
   }
+
+  /* ── LOGIN OVERLAY ── */
+  .login-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--black);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-overlay.hidden { display: none; }
+
+  .login-box {
+    background: var(--gray-900);
+    border: 1px solid rgba(232,108,26,0.3);
+    border-radius: var(--radius-lg);
+    padding: 40px 36px 32px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .login-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--orange);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .login-logo-text {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .login-logo-text span { color: var(--orange); }
+
+  .login-subtitle {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 28px;
+  }
+
+  .login-input {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 12px 16px;
+    background: var(--black);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    color: var(--white);
+    margin-bottom: 16px;
+    text-align: center;
+    letter-spacing: 0.15em;
+    transition: border-color 0.2s;
+  }
+
+  .login-input:focus {
+    outline: none;
+    border-color: var(--orange);
+  }
+
+  .login-input.error {
+    border-color: var(--red);
+    animation: loginShake 0.3s;
+  }
+
+  @keyframes loginShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .login-btn {
+    width: 100%;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px;
+    background: var(--orange);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .login-btn:hover { background: var(--orange-dark); }
+
+  .login-error-msg {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--red);
+    margin-top: 12px;
+    height: 16px;
+  }
+
+  /* ── GRAIN FALLBACK LINKS ── */
+  .grain-fallback {
+    text-align: center;
+    padding: 16px 12px;
+  }
+
+  .grain-fallback-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .grain-fallback-title {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 4px;
+  }
+
+  .grain-fallback-detail {
+    font-size: 11px;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .grain-visit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    background: var(--orange);
+    border: none;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  .grain-visit-btn:hover { background: var(--orange-dark); }
+
+  .grain-backend-note {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--gray-500);
+    margin-top: 10px;
+  }
 </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🌽</div>
+      <div class="login-logo-text">Farm<span>OS</span></div>
+    </div>
+    <div class="login-subtitle">Janssen & Hoffman Farms</div>
+    <form onsubmit="return handleLogin(event)">
+      <input class="login-input" type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" autofocus>
+      <button class="login-btn" type="submit">Sign In</button>
+    </form>
+    <div class="login-error-msg" id="login-error"></div>
+  </div>
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -1200,6 +1395,7 @@
   <div class="tab active" onclick="switchTab('home', this)">Home</div>
   <div class="tab" onclick="switchTab('cameras', this)">Cameras</div>
   <div class="tab" onclick="switchTab('fieldops', this)">Field Ops</div>
+  <div class="tab" onclick="switchTab('equipops', this)">Equipment</div>
   <div class="tab" onclick="switchTab('grainops', this)">Grain Ops</div>
 </div>
 
@@ -1758,6 +1954,16 @@
   </div>
 </div>
 
+<!-- EQUIPMENT OPS TAB -->
+<div class="content" id="tab-equipops">
+  <div class="blank-tab">
+    <div class="blank-tab-icon">🔧</div>
+    <div class="blank-tab-title">Equipment Operations</div>
+    <div class="blank-tab-sub">Equipment inventory, maintenance logs, service schedules, and repair tracking — coming soon.</div>
+    <div class="coming-soon-badge">In Development</div>
+  </div>
+</div>
+
 <!-- GRAIN OPS TAB -->
 <div class="content" id="tab-grainops">
   <div class="blank-tab">
@@ -2232,12 +2438,21 @@
     if (span) span.textContent = message;
   }
 
+  const ELEVATOR_URLS = {
+    gp: { url: 'https://gpreinc.com/corn-bids/', name: 'Green Plains' },
+    nfp: { url: 'https://www.nfpinc.com/corn-bids', name: 'NFP' }
+  };
+
   function setElevatorError(tbodyId, statusId, errorMsg) {
+    const key = tbodyId.replace('-tbody', '');
+    const info = ELEVATOR_URLS[key] || { url: '#', name: 'Elevator' };
     document.getElementById(tbodyId).innerHTML = `<tr><td colspan="4">
-      <div class="grain-error-msg">
-        <div class="error-title">${errorMsg}</div>
-        <div class="error-detail">Start the backend server: npm install &amp;&amp; npm start</div>
-        <button class="retry-btn" onclick="fetchGrainData()">Retry Now</button>
+      <div class="grain-fallback">
+        <div class="grain-fallback-icon">📊</div>
+        <div class="grain-fallback-title">Live bids require backend server</div>
+        <div class="grain-fallback-detail">View current bids directly on the elevator's website:</div>
+        <a class="grain-visit-btn" href="${info.url}" target="_blank" rel="noopener">View ${info.name} Bids →</a>
+        <div class="grain-backend-note">For auto-updating bids: npm install && npm start</div>
       </div>
     </td></tr>`;
     setElevatorStatus(statusId, 'error', errorMsg);
@@ -2353,6 +2568,40 @@
     await origFetchWeather();
     lastRefresh = Date.now();
   };
+
+  // ================================================================
+  //  PASSWORD PROTECTION
+  // ================================================================
+
+  // Change this password to whatever you want
+  const SITE_PASSWORD = 'farmos2026';
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const input = document.getElementById('login-password');
+    const errorEl = document.getElementById('login-error');
+
+    if (input.value === SITE_PASSWORD) {
+      sessionStorage.setItem('farmos_auth', 'true');
+      document.getElementById('login-overlay').classList.add('hidden');
+      input.value = '';
+      errorEl.textContent = '';
+    } else {
+      input.classList.add('error');
+      errorEl.textContent = 'Incorrect password';
+      setTimeout(() => input.classList.remove('error'), 300);
+      input.value = '';
+      input.focus();
+    }
+    return false;
+  }
+
+  // Check auth on page load
+  (function checkAuth() {
+    if (sessionStorage.getItem('farmos_auth') === 'true') {
+      document.getElementById('login-overlay').classList.add('hidden');
+    }
+  })();
 </script>
 </body>
 </html>
