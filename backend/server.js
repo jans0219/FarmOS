@@ -5,6 +5,7 @@ const fs = require('fs');
 const cron = require('node-cron');
 const greenPlains = require('./scrapers/green-plains');
 const nfp = require('./scrapers/nfp');
+const crystalValley = require('./scrapers/crystal-valley');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,7 +22,8 @@ function readCache() {
   } catch {
     return {
       greenPlains: { success: false, data: [], error: 'Cache not initialized', timestamp: null },
-      nfp: { success: false, data: [], error: 'Cache not initialized', timestamp: null }
+      nfp: { success: false, data: [], error: 'Cache not initialized', timestamp: null },
+      crystalValley: { success: false, data: [], error: 'Cache not initialized', timestamp: null }
     };
   }
 }
@@ -55,9 +57,10 @@ async function runScrapeJob() {
   console.log(`[${new Date().toISOString()}] Starting grain scrape job...`);
   const cache = readCache();
 
-  const [gpResult, nfpResult] = await Promise.allSettled([
+  const [gpResult, nfpResult, cvResult] = await Promise.allSettled([
     greenPlains.scrape(),
-    nfp.scrape()
+    nfp.scrape(),
+    crystalValley.scrape()
   ]);
 
   // Update Green Plains
@@ -93,6 +96,25 @@ async function runScrapeJob() {
       success: false,
       data: cache.nfp.data,
       error: nfpResult.reason?.message || 'Unknown error',
+      timestamp: new Date().toISOString(),
+      stale: true
+    };
+  }
+
+  // Update Crystal Valley
+  if (cvResult.status === 'fulfilled') {
+    cache.crystalValley = cvResult.value;
+    if (cvResult.value.success) {
+      console.log(`  Crystal Valley: ${cvResult.value.data.length} bids scraped`);
+    } else {
+      console.warn(`  Crystal Valley: scrape failed — ${cvResult.value.error}`);
+    }
+  } else {
+    console.error(`  Crystal Valley: exception — ${cvResult.reason}`);
+    cache.crystalValley = {
+      success: false,
+      data: (cache.crystalValley && cache.crystalValley.data) || [],
+      error: cvResult.reason?.message || 'Unknown error',
       timestamp: new Date().toISOString(),
       stale: true
     };
