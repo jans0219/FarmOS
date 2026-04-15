@@ -1356,6 +1356,201 @@
     color: var(--gray-500);
     margin-top: 10px;
   }
+ /* ── TOOLBAR ── */
+  .eq-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+  }
+  .eq-toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .eq-title {
+    font-family: var(--font-display); font-size: 18px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-900);
+  }
+  .eq-saved { font-size: 11px; color: var(--gray-500); font-style: italic; }
+ 
+  .filter-bar { display: flex; gap: 4px; }
+  .filter-btn {
+    font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 4px 14px; border-radius: 20px;
+    border: 1px solid var(--gray-200); background: var(--white);
+    color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--orange); color: var(--white); border-color: var(--orange); }
+  .filter-btn:hover:not(.active) { border-color: var(--gray-300); color: var(--gray-700); }
+ 
+  .view-toggle {
+    display: flex; gap: 1px; background: var(--gray-100);
+    border-radius: var(--radius); padding: 3px;
+    border: 1px solid var(--gray-200);
+  }
+  .view-btn {
+    font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 4px 14px; border-radius: 4px; border: none;
+    background: transparent; color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+  }
+  .view-btn.active {
+    background: var(--white); color: var(--orange); font-weight: 700;
+    box-shadow: var(--shadow-sm);
+  }
+ 
+  .action-btn {
+    font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 6px 16px; border-radius: var(--radius);
+    border: 1px solid var(--gray-200); background: var(--white);
+    color: var(--gray-500); cursor: pointer; transition: all 0.15s;
+  }
+  .action-btn:hover { background: var(--gray-50); border-color: var(--gray-300); color: var(--gray-700); }
+  .action-btn.primary { background: var(--orange); color: var(--white); border-color: var(--orange); }
+  .action-btn.primary:hover { background: var(--orange-dark); }
+ 
+  /* ── SUMMARY CARDS ── */
+  .summary-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .stat-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--gray-100); padding: 10px 16px;
+    flex: 1; min-width: 110px; box-shadow: var(--shadow-sm);
+  }
+  .stat-label { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 3px; }
+  .stat-value { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+ 
+  /* ── TABLE WRAPPER ── */
+  .table-card {
+    background: var(--white); border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-100); box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .table-wrap { width: 100%; overflow-x: auto; }
+ 
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.expanded { min-width: 1140px; }
+  table.simple { min-width: 480px; }
+ 
+  thead th {
+    background: var(--gray-50); color: var(--gray-500);
+    font-family: var(--font-display); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 9px 12px; text-align: left;
+    border-bottom: 1px solid var(--gray-100); white-space: nowrap;
+  }
+  thead th.num { text-align: right; }
+  thead th.ctr { text-align: center; }
+  thead th.own-h {
+    background: var(--orange-pale); color: var(--orange-dark);
+    text-align: center; border-left: 1px solid #f5c9a0;
+  }
+  thead th.own-hc { background: var(--orange-pale); color: var(--orange-dark); text-align: center; }
+ 
+  tbody tr.eq-row {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.1s; cursor: pointer;
+  }
+  tbody tr.eq-row:hover { background: var(--gray-50); }
+  tbody tr.eq-row.row-open { background: var(--orange-pale); }
+ 
+  tbody td { padding: 9px 12px; color: var(--gray-700); vertical-align: middle; }
+  tbody td.num { text-align: right; font-family: var(--font-mono); font-size: 11px; }
+  tbody td.muted { color: var(--gray-500); }
+  tbody td.ctr { text-align: center; font-family: var(--font-mono); font-size: 11px; }
+ 
+  .expand-btn {
+    width: 20px; height: 20px; border-radius: 4px;
+    border: 1px solid var(--gray-200); background: var(--white);
+    color: var(--gray-500); font-size: 9px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, background 0.15s;
+  }
+  .expand-btn.open { transform: rotate(90deg); background: var(--orange); color: var(--white); border-color: var(--orange); }
+ 
+  .make-badge { display: inline-flex; align-items: center; gap: 6px; }
+  .jd-dot { width: 8px; height: 8px; border-radius: 50%; background: #367C2B; flex-shrink: 0; }
+ 
+  .cat-pill { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 9px; border-radius: 20px; }
+  .cat-combine { background: #e6f1fb; color: #0c447c; }
+  .cat-tractor { background: #eaf3de; color: #27500a; }
+  .cat-other { background: var(--gray-100); color: var(--gray-500); }
+ 
+  .own-group { border-left: 1px solid #f5c9a0; }
+  .own-zero { color: var(--gray-300); }
+ 
+  /* ── MAINTENANCE SUB-TABLE ── */
+  tr.maint-row { display: none; }
+  tr.maint-row.open { display: table-row; }
+ 
+  .maint-cell { padding: 0 !important; border-bottom: 1px solid var(--gray-200) !important; }
+  .maint-inner {
+    padding: 16px 20px 18px 44px;
+    background: var(--white);
+    border-top: 2px solid var(--orange-pale);
+  }
+ 
+  .maint-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .maint-title {
+    font-family: var(--font-display); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-700);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .maint-count {
+    font-family: var(--font-body); font-size: 11px; font-weight: 400;
+    text-transform: none; letter-spacing: 0; color: var(--gray-500);
+  }
+  .maint-add-btn {
+    font-family: var(--font-display); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 5px 14px; border-radius: var(--radius);
+    border: 1px solid var(--orange); background: var(--white);
+    color: var(--orange); cursor: pointer; transition: all 0.15s;
+  }
+  .maint-add-btn:hover { background: var(--orange-pale); }
+ 
+  .maint-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .maint-table thead th {
+    font-family: var(--font-display); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500);
+    padding: 6px 10px; text-align: left;
+    border-bottom: 1px solid var(--gray-100); background: var(--gray-50);
+  }
+  .maint-table thead th.num { text-align: right; }
+  .maint-table tbody td {
+    padding: 7px 10px; border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700); vertical-align: middle;
+  }
+  .maint-table tbody td.muted { color: var(--gray-500); }
+  .maint-table tbody td.num { text-align: right; font-family: var(--font-mono); }
+  .maint-table tbody tr:last-child td { border-bottom: none; }
+  .maint-table tbody tr:hover td { background: var(--gray-50); }
+ 
+  .svc-pill { font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 20px; }
+  .svc-oil      { background: #faeeda; color: #633806; }
+  .svc-repair   { background: #fcebeb; color: #791f1f; }
+  .svc-inspect  { background: #e6f1fb; color: #0c447c; }
+  .svc-filter   { background: #eaf3de; color: #27500a; }
+  .svc-other    { background: var(--gray-100); color: var(--gray-500); }
+ 
+  .maint-empty {
+    padding: 14px 10px; color: var(--gray-400); font-size: 11px;
+    font-style: italic; border: 1px dashed var(--gray-200); border-radius: var(--radius);
+    text-align: center; background: var(--gray-50);
+  }
+ 
+  .add-row-btn {
+    width: 100%; padding: 11px; font-family: var(--font-display);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--gray-400); background: var(--gray-50);
+    border: none; border-top: 1px solid var(--gray-100); cursor: pointer; transition: all 0.15s;
+  }
+  .add-row-btn:hover { color: var(--orange); background: var(--orange-pale); }
+ 
+  .phase-note {
+    margin-top: 14px; font-size: 11px; color: var(--gray-500);
+    padding: 10px 16px; background: var(--white);
+    border-radius: var(--radius); border: 1px solid var(--gray-100);
+    border-left: 3px solid var(--orange);
+  }
 </style>
 </head>
 <body>
@@ -1956,12 +2151,50 @@
 
 <!-- EQUIPMENT OPS TAB -->
 <div class="content" id="tab-equipops">
-  <div class="blank-tab">
-    <div class="blank-tab-icon">🔧</div>
-    <div class="blank-tab-title">Equipment Operations</div>
-    <div class="blank-tab-sub">Equipment inventory, maintenance logs, service schedules, and repair tracking — coming soon.</div>
-    <div class="coming-soon-badge">In Development</div>
+  <div class="eq-toolbar">
+  <div class="eq-toolbar-left">
+    <span class="eq-title">Equipment Operations</span>
+    <span class="eq-saved">Last saved: 2-Apr-25</span>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterCat('All',this)">All</button>
+      <button class="filter-btn" onclick="filterCat('Combine',this)">Combines</button>
+      <button class="filter-btn" onclick="filterCat('Tractor',this)">Tractors</button>
+      <button class="filter-btn" onclick="filterCat('Other',this)">Other</button>
+    </div>
   </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <div class="view-toggle">
+      <button class="view-btn active" id="vb-simple" onclick="setView('simple')">Simple</button>
+      <button class="view-btn" id="vb-expanded" onclick="setView('expanded')">Expanded</button>
+    </div>
+    <button class="action-btn">↓ Export Excel</button>
+    <button class="action-btn">↑ Import Excel</button>
+    <button class="action-btn primary">+ Add Equipment</button>
+  </div>
+</div>
+ 
+<div class="summary-row">
+  <div class="stat-card"><div class="stat-label">Total Units</div><div class="stat-value" id="s-units">—</div></div>
+  <div class="stat-card"><div class="stat-label">Fleet Value at Deal</div><div class="stat-value" id="s-value">—</div></div>
+  <div class="stat-card"><div class="stat-label">Combines</div><div class="stat-value" id="s-combines">—</div></div>
+  <div class="stat-card"><div class="stat-label">Tractors</div><div class="stat-value" id="s-tractors">—</div></div>
+  <div class="stat-card"><div class="stat-label">Avg Fleet Year</div><div class="stat-value" id="s-year">—</div></div>
+  <div class="stat-card"><div class="stat-label">Maintenance Records</div><div class="stat-value" id="s-maint">—</div></div>
+</div>
+ 
+<div class="table-card">
+  <div class="table-wrap">
+    <table id="eq-table" class="simple">
+      <thead id="eq-thead"></thead>
+      <tbody id="eq-body"></tbody>
+    </table>
+  </div>
+  <button class="add-row-btn">+ Add Row</button>
+</div>
+ 
+<div class="phase-note">
+  ⚙ Phase 2 — Connect to Google Sheets or PostgreSQL to persist equipment records and maintenance logs. Excel import/export and edit/save functionality enabled once backend is wired.
+</div>
 </div>
 
 <!-- GRAIN OPS TAB -->
@@ -2602,6 +2835,199 @@
       document.getElementById('login-overlay').classList.add('hidden');
     }
   })();
+const equipment = [
+  { id:1, make:'John Deere', model:'S780',   cat:'Combine', year:2023, serial:'1H0S780STNT825265', meter:'665 Eng / 463 Sep', meterDate:'3-Mar-25',  desc:'463 sep. hrs., 665 engine hrs., 2WD, Contour-Master w/fore & aft', dateBought:'3-Mar-25',  valueAtDeal:329000, residual:null,   boot:null,   gary:0,     nick:41.67, chris:41.67, nate:16.67, notes:'Bought from Ste.' },
+  { id:2, make:'John Deere', model:'S670',   cat:'Combine', year:2014, serial:'1H0S670SLE0766839', meter:'321 Eng / 264 Sep', meterDate:'2-Apr-25',  desc:'',                                                                   dateBought:'',          valueAtDeal:220000, residual:null,   boot:null,   gary:50,    nick:16.67, chris:16.67, nate:16.67, notes:'' },
+  { id:3, make:'John Deere', model:'9RT570', cat:'Tractor', year:2022, serial:'1RW9570DTNE925217', meter:'286 Hrs',           meterDate:'15-Jan-25', desc:'',                                                                   dateBought:'22-Nov-23', valueAtDeal:580000, residual:232000, boot:348000, gary:20,    nick:31.67, chris:31.67, nate:16.67, notes:'Traded 2013 95.' },
+  { id:4, make:'John Deere', model:'9520T',  cat:'Tractor', year:2004, serial:'RW9520T903095',     meter:'6000 Hr',           meterDate:'30-Jan-23', desc:'',                                                                   dateBought:'30-Jan-23', valueAtDeal:86900,  residual:null,   boot:null,   gary:0,     nick:41.67, chris:41.67, nate:16.67, notes:'Bought outright' },
+  { id:5, make:'John Deere', model:'8R370',  cat:'Tractor', year:2022, serial:'1RW8370DCNC207900', meter:'405 Hrs',           meterDate:'20-Mar-24', desc:'480/80R50 rear duals',                                              dateBought:'20-Mar-24', valueAtDeal:347000, residual:null,   boot:null,   gary:0,     nick:41.67, chris:41.67, nate:16.67, notes:'Bought at Steff.' },
+  { id:6, make:'John Deere', model:'8370R',  cat:'Tractor', year:2016, serial:'1RW8370RAGD113219', meter:'3362 Hrs',          meterDate:'20-Jul-23', desc:'MFWD, IVT, ILS, cab w/susp., active seat, buddy seat, 6 hyd.',     dateBought:'20-Jul-23', valueAtDeal:298608, residual:132103, boot:166505, gary:12.18, nick:36.40, chris:36.40, nate:15.01, notes:'Percentages fou.' },
+  { id:7, make:'John Deere', model:'6150R',  cat:'Tractor', year:2014, serial:'1RW6150RLEA012604', meter:'',                  meterDate:'',          desc:'20 speed, LHR, 360H Loader',                                       dateBought:'',          valueAtDeal:92500,  residual:null,   boot:null,   gary:50,    nick:16.67, chris:16.67, nate:16.67, notes:'' },
+];
+ 
+const maintenance = {
+  3: [
+    { date:'12-Mar-25', type:'Oil Change', hours:'280 Hrs', who:'In-house',    cost:185,  parts:'DEF fluid, engine oil 15W-40', notes:'Changed all filters' },
+    { date:'5-Nov-24',  type:'Inspection', hours:'210 Hrs', who:'Deere Dealer',cost:320,  parts:'',                             notes:'Pre-season check' },
+  ],
+  5: [
+    { date:'18-Mar-24', type:'Oil Change', hours:'400 Hrs', who:'In-house',    cost:210,  parts:'Engine oil, hydraulic filter', notes:'' },
+  ],
+  6: [
+    { date:'22-Jan-25', type:'Repair',     hours:'3300 Hrs',who:'Deere Dealer',cost:2840, parts:'Hydraulic pump seal kit',       notes:'Front axle seal leak' },
+    { date:'10-Aug-24', type:'Oil Change', hours:'3100 Hrs',who:'In-house',    cost:190,  parts:'15W-40, filters',              notes:'' },
+  ],
+};
+ 
+let currentFilter = 'All';
+let currentView = 'simple';
+let openRows = new Set();
+ 
+function fmt(v) {
+  if (v === null || v === undefined || v === '') return '<span style="color:var(--gray-300)">—</span>';
+  return '$' + Math.round(v).toLocaleString();
+}
+function pct(v) {
+  if (v === 0) return '<span class="own-zero">0%</span>';
+  return v.toFixed(2) + '%';
+}
+function catPill(cat) {
+  const cls = cat==='Combine'?'cat-combine':cat==='Tractor'?'cat-tractor':'cat-other';
+  return `<span class="cat-pill ${cls}">${cat}</span>`;
+}
+function svcPill(type) {
+  const t = type.toLowerCase();
+  const cls = t.includes('oil')?'svc-oil':t.includes('repair')?'svc-repair':t.includes('inspect')?'svc-inspect':t.includes('filter')?'svc-filter':'svc-other';
+  return `<span class="svc-pill ${cls}">${type}</span>`;
+}
+ 
+function maintHTML(eq) {
+  const logs = maintenance[eq.id] || [];
+  const colSpan = currentView === 'simple' ? 6 : 18;
+  const totalMaintCost = logs.reduce((s,l) => s+l.cost, 0);
+ 
+  let tableHTML = logs.length === 0
+    ? `<div class="maint-empty">No maintenance records yet — add the first entry to start tracking service history for this unit.</div>`
+    : `<table class="maint-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Service Type</th>
+            <th>Meter at Service</th>
+            <th>Performed By</th>
+            <th class="num">Cost</th>
+            <th>Parts / Supplies</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${logs.map(l => `
+            <tr>
+              <td class="muted">${l.date}</td>
+              <td>${svcPill(l.type)}</td>
+              <td class="muted">${l.hours}</td>
+              <td class="muted">${l.who}</td>
+              <td class="num">$${l.cost.toLocaleString()}</td>
+              <td class="muted">${l.parts || '—'}</td>
+              <td class="muted">${l.notes || '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${logs.length > 0 ? `<div style="text-align:right;font-size:11px;color:var(--gray-500);margin-top:8px;font-family:var(--font-mono);">Total maintenance cost logged: $${totalMaintCost.toLocaleString()}</div>` : ''}`;
+ 
+  return `
+    <tr class="maint-row ${openRows.has(eq.id)?'open':''}" id="maint-${eq.id}">
+      <td class="maint-cell" colspan="${colSpan}">
+        <div class="maint-inner">
+          <div class="maint-header">
+            <div class="maint-title">
+              🔧 Maintenance Log — ${eq.year} ${eq.make} ${eq.model}
+              <span class="maint-count">${logs.length} record${logs.length!==1?'s':''}</span>
+            </div>
+            <button class="maint-add-btn">+ Log Service Entry</button>
+          </div>
+          ${tableHTML}
+        </div>
+      </td>
+    </tr>`;
+}
+ 
+function toggleRow(id) {
+  openRows.has(id) ? openRows.delete(id) : openRows.add(id);
+  render();
+}
+ 
+function setView(v) {
+  currentView = v;
+  document.getElementById('vb-simple').classList.toggle('active', v==='simple');
+  document.getElementById('vb-expanded').classList.toggle('active', v==='expanded');
+  render();
+}
+ 
+function filterCat(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+ 
+function render() {
+  const data = currentFilter==='All' ? equipment : equipment.filter(e=>e.cat===currentFilter);
+  const tbl = document.getElementById('eq-table');
+  tbl.className = currentView==='simple' ? 'simple' : 'expanded';
+ 
+  if (currentView === 'simple') {
+    document.getElementById('eq-thead').innerHTML = `<tr>
+      <th style="width:32px;"></th>
+      <th>Make</th><th>Model</th><th>Category</th><th>Year</th><th>Serial #</th>
+    </tr>`;
+    document.getElementById('eq-body').innerHTML = data.map(e => `
+      <tr class="eq-row ${openRows.has(e.id)?'row-open':''}" onclick="toggleRow(${e.id})">
+        <td><button class="expand-btn ${openRows.has(e.id)?'open':''}" onclick="event.stopPropagation();toggleRow(${e.id})">▶</button></td>
+        <td><span class="make-badge"><span class="jd-dot"></span>${e.make}</span></td>
+        <td style="font-weight:600;">${e.model}</td>
+        <td>${catPill(e.cat)}</td>
+        <td class="muted">${e.year}</td>
+        <td class="muted" style="font-family:var(--font-mono);font-size:11px;">${e.serial}</td>
+      </tr>
+      ${maintHTML(e)}
+    `).join('');
+  } else {
+    document.getElementById('eq-thead').innerHTML = `<tr>
+      <th style="width:32px;"></th>
+      <th>Make</th><th>Model</th><th>Category</th><th>Year</th><th>Serial #</th>
+      <th>Meter</th><th>Meter Date</th>
+      <th>Description</th>
+      <th class="num">Date Bought</th>
+      <th class="num">Value at Deal</th>
+      <th class="num">Residual From</th>
+      <th class="num">Boot Price</th>
+      <th class="own-h">Gary</th>
+      <th class="own-hc">Nick</th>
+      <th class="own-hc">Chris</th>
+      <th class="own-hc">Nate</th>
+      <th>Notes</th>
+    </tr>`;
+    document.getElementById('eq-body').innerHTML = data.map(e => `
+      <tr class="eq-row ${openRows.has(e.id)?'row-open':''}" onclick="toggleRow(${e.id})">
+        <td><button class="expand-btn ${openRows.has(e.id)?'open':''}" onclick="event.stopPropagation();toggleRow(${e.id})">▶</button></td>
+        <td><span class="make-badge"><span class="jd-dot"></span>${e.make}</span></td>
+        <td style="font-weight:600;">${e.model}</td>
+        <td>${catPill(e.cat)}</td>
+        <td class="muted">${e.year}</td>
+        <td class="muted" style="font-family:var(--font-mono);font-size:11px;">${e.serial}</td>
+        <td class="muted">${e.meter||'—'}</td>
+        <td class="muted" style="font-size:11px;font-family:var(--font-mono);">${e.meterDate||'—'}</td>
+        <td class="muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.desc}">${e.desc||'—'}</td>
+        <td class="num muted">${e.dateBought||'—'}</td>
+        <td class="num">${fmt(e.valueAtDeal)}</td>
+        <td class="num muted">${fmt(e.residual)}</td>
+        <td class="num muted">${fmt(e.boot)}</td>
+        <td class="ctr own-group">${pct(e.gary)}</td>
+        <td class="ctr">${pct(e.nick)}</td>
+        <td class="ctr">${pct(e.chris)}</td>
+        <td class="ctr">${pct(e.nate)}</td>
+        <td class="muted" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${e.notes}">${e.notes||'—'}</td>
+      </tr>
+      ${maintHTML(e)}
+    `).join('');
+  }
+ 
+  const total = data.reduce((s,e)=>s+(e.valueAtDeal||0),0);
+  const avgYear = Math.round(data.reduce((s,e)=>s+e.year,0)/data.length);
+  const totalMaint = Object.values(maintenance).reduce((s,arr)=>s+arr.length,0);
+ 
+  document.getElementById('s-units').textContent    = data.length;
+  document.getElementById('s-value').textContent    = total>=1000000 ? '$'+(total/1000000).toFixed(2)+'M' : '$'+Math.round(total).toLocaleString();
+  document.getElementById('s-combines').textContent = data.filter(e=>e.cat==='Combine').length;
+  document.getElementById('s-tractors').textContent = data.filter(e=>e.cat==='Tractor').length;
+  document.getElementById('s-year').textContent     = avgYear;
+  document.getElementById('s-maint').textContent    = totalMaint;
+}
+ 
+render();
+  
 </script>
 </body>
 </html>
