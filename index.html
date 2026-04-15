@@ -779,11 +779,42 @@
     margin-bottom: 2px;
   }
 
+  .gdu-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
   .gdu-value {
     font-family: var(--font-display);
     font-size: 32px;
     font-weight: 800;
     color: var(--orange);
+    line-height: 1;
+  }
+
+  .gdu-prior {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    opacity: 0.85;
+  }
+
+  .gdu-prior-label {
+    font-family: var(--font-display);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+  }
+
+  .gdu-prior-value {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--orange-light);
     line-height: 1;
   }
 
@@ -1677,6 +1708,35 @@
 
               <div class="grain-divider"></div>
 
+              <!-- Crystal Valley -->
+              <div class="elevator-block" id="cv-block">
+                <div class="elevator-name">Crystal Valley Cooperative</div>
+                <div class="elevator-location">Trimont, MN · crystalvalley.coop</div>
+                <table class="grain-table" id="cv-table">
+                  <thead>
+                    <tr>
+                      <th>Delivery</th>
+                      <th>Cash Bid</th>
+                      <th>Basis</th>
+                      <th>Change</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cv-tbody">
+                    <tr>
+                      <td colspan="4" style="text-align:center; padding:14px 0;">
+                        <span style="color:var(--gray-400); font-size:12px;">Loading bids...</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="data-status" id="cv-status">
+                  <span class="data-status-dot loading"></span>
+                  <span>Connecting to crystalvalley.coop...</span>
+                </div>
+              </div>
+
+              <div class="grain-divider"></div>
+
               <!-- Valero placeholder -->
               <div class="elevator-block">
                 <div class="elevator-name">Valero Ethanol</div>
@@ -1876,7 +1936,13 @@
           <div class="gdu-block">
             <div class="gdu-left">
               <div class="gdu-label">Growing Degree Units (Base 50°F)</div>
-              <div class="gdu-value" id="wx-gdu-value">-- <span class="gdu-unit">GDU</span></div>
+              <div class="gdu-value-row">
+                <div class="gdu-value" id="wx-gdu-value">-- <span class="gdu-unit">GDU</span></div>
+                <div class="gdu-prior" id="wx-gdu-prior" title="Prior year same date range">
+                  <span class="gdu-prior-label">Prior YTD</span>
+                  <span class="gdu-prior-value" id="wx-gdu-prior-value">--</span>
+                </div>
+              </div>
               <div class="gdu-since" id="wx-gdu-since">Since April 10, 2026</div>
             </div>
             <input class="gdu-date-input" type="date" value="2026-04-10" id="gdu-date-input">
@@ -2228,7 +2294,8 @@
     ],
     grainSources: {
       greenPlains: 'https://gpreinc.com/corn-bids/',
-      nfp: 'https://www.nfpinc.com/corn-bids'
+      nfp: 'https://www.nfpinc.com/corn-bids',
+      crystalValley: 'https://crystalvalley.coop/grain/'
     }
   };
 
@@ -2460,6 +2527,20 @@
   }
 
   // ── GDU CALCULATION ──
+  // Helper: calculate GDU total from a daily max/min array for a date range
+  function calcGDU(dailyData, startDate, endDate) {
+    let total = 0;
+    for (let i = 0; i < dailyData.time.length; i++) {
+      if (dailyData.time[i] >= startDate && dailyData.time[i] <= endDate) {
+        const tMax = Math.min(dailyData.temperature_2m_max[i], 86);
+        const tMin = Math.max(dailyData.temperature_2m_min[i], CONFIG.gduBase);
+        const gdu = Math.max(0, ((tMax + tMin) / 2) - CONFIG.gduBase);
+        total += gdu;
+      }
+    }
+    return total;
+  }
+
   function updateGDU(data) {
     const d = data.daily;
     const dateInput = document.getElementById('gdu-date-input');
@@ -2467,15 +2548,7 @@
     const todayIdx = findTodayIndex(d.time);
     const today = d.time[todayIdx];
 
-    let totalGDU = 0;
-    for (let i = 0; i < d.time.length; i++) {
-      if (d.time[i] >= startDate && d.time[i] <= today) {
-        const tMax = Math.min(d.temperature_2m_max[i], 86); // cap at 86°F per standard GDU
-        const tMin = Math.max(d.temperature_2m_min[i], CONFIG.gduBase);
-        const gdu = Math.max(0, ((tMax + tMin) / 2) - CONFIG.gduBase);
-        totalGDU += gdu;
-      }
-    }
+    const totalGDU = calcGDU(d, startDate, today);
 
     document.getElementById('wx-gdu-value').innerHTML =
       `${Math.round(totalGDU)} <span class="gdu-unit">GDU</span>`;
@@ -2483,6 +2556,64 @@
     const startD = new Date(startDate + 'T12:00:00');
     const sinceStr = startD.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     document.getElementById('wx-gdu-since').textContent = `Since ${sinceStr}`;
+
+    // Fetch prior year GDU for the same date range
+    updatePriorGDU(startDate, today);
+  }
+
+  // ── PRIOR YTD GDU ──
+  // Fetches archive weather for prior year and calculates GDU for same date range.
+  let priorGDUCache = {}; // keyed by `${startDate}|${endDate}`
+
+  async function updatePriorGDU(startDate, endDate) {
+    const priorStart = shiftYear(startDate, -1);
+    const priorEnd = shiftYear(endDate, -1);
+    const cacheKey = `${priorStart}|${priorEnd}`;
+
+    const priorEl = document.getElementById('wx-gdu-prior-value');
+    priorEl.textContent = '...';
+
+    if (priorGDUCache[cacheKey] !== undefined) {
+      priorEl.textContent = Math.round(priorGDUCache[cacheKey]);
+      return;
+    }
+
+    try {
+      const url = `https://archive-api.open-meteo.com/v1/archive?` +
+        `latitude=${CONFIG.lat}&longitude=${CONFIG.lon}` +
+        `&start_date=${priorStart}&end_date=${priorEnd}` +
+        `&daily=temperature_2m_max,temperature_2m_min` +
+        `&temperature_unit=fahrenheit&timezone=${CONFIG.timezone}`;
+
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Archive API: HTTP ${resp.status}`);
+      const archive = await resp.json();
+
+      if (!archive.daily || !archive.daily.time) {
+        throw new Error('No archive data returned');
+      }
+
+      const priorTotal = calcGDU(archive.daily, priorStart, priorEnd);
+      priorGDUCache[cacheKey] = priorTotal;
+      priorEl.textContent = Math.round(priorTotal);
+      priorEl.parentElement.title = `Prior YTD (${priorStart} to ${priorEnd})`;
+    } catch (err) {
+      console.warn('Prior GDU fetch failed:', err);
+      priorEl.textContent = 'n/a';
+    }
+  }
+
+  // Shift an ISO date string (YYYY-MM-DD) by N years. Handles Feb 29 by dropping to Feb 28.
+  function shiftYear(isoDate, years) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const newYear = y + years;
+    // Feb 29 edge case: if prior year not a leap year, use Feb 28
+    let day = d;
+    if (m === 2 && d === 29) {
+      const isLeap = (newYear % 4 === 0 && newYear % 100 !== 0) || newYear % 400 === 0;
+      if (!isLeap) day = 28;
+    }
+    return `${newYear}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
   // Recalculate GDU when date input changes
@@ -2673,7 +2804,8 @@
 
   const ELEVATOR_URLS = {
     gp: { url: 'https://gpreinc.com/corn-bids/', name: 'Green Plains' },
-    nfp: { url: 'https://www.nfpinc.com/corn-bids', name: 'NFP' }
+    nfp: { url: 'https://www.nfpinc.com/corn-bids', name: 'NFP' },
+    cv: { url: 'https://crystalvalley.coop/grain/#bids', name: 'Crystal Valley' }
   };
 
   function setElevatorError(tbodyId, statusId, errorMsg) {
@@ -2717,7 +2849,7 @@
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const cache = await resp.json();
 
-      let gpOk = false, nfpOk = false;
+      let gpOk = false, nfpOk = false, cvOk = false;
 
       // Green Plains
       if (cache.greenPlains) {
@@ -2733,6 +2865,14 @@
       }
       if (!nfpOk) {
         setElevatorError('nfp-tbody', 'nfp-status', 'No bids from backend \u2014 scraper may be initializing');
+      }
+
+      // Crystal Valley
+      if (cache.crystalValley) {
+        cvOk = populateElevator('cv-tbody', 'cv-status', cache.crystalValley, 'Crystal Valley');
+      }
+      if (!cvOk) {
+        setElevatorError('cv-tbody', 'cv-status', 'No bids from backend \u2014 scraper may be initializing');
       }
 
       return true; // backend was reachable
@@ -2766,7 +2906,8 @@
     if (!backendOk) {
       await Promise.allSettled([
         fetchGrainViaCORSProxy('greenPlains', 'gp-tbody', 'gp-status'),
-        fetchGrainViaCORSProxy('nfp', 'nfp-tbody', 'nfp-status')
+        fetchGrainViaCORSProxy('nfp', 'nfp-tbody', 'nfp-status'),
+        fetchGrainViaCORSProxy('crystalValley', 'cv-tbody', 'cv-status')
       ]);
     }
   }
